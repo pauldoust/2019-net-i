@@ -18,7 +18,7 @@ FUNCTIONS
     librarify(input_file, hub_address, chunk_size=2048, output_path=None)
         Generates a .libr description of input_file.
 
-1 + 1 + 1 + 2 + 1 + 1
+1 + 1 + 1 + 2 + 1 + 1 + 1
 """
 
 import hashlib
@@ -46,22 +46,23 @@ def _bytes_to_sha1(chunk):
     return result
 
 def _verify_input_file(input_file):
-    """Raise errors if input_file is not a string or does not exist."""
+    """Raise errors if input_file is not a file or does not exist."""
     
-    # raise TypeError if provided argument is not a string
-    if type(input_file) is not str:
-        raise TypeError('Provided input path is not a string.')
+    # raise TypeError if provided argument is not a string or bytestring
+    file_type = type(input_file)
+    if (file_type is not str) and (file_type is not bytes):
+        raise TypeError('Provided input path is not string or bytes.')
 
     # raise ValueError if provided path is not a file 
     if not os.path.isfile(input_file):
         raise ValueError('Provided input is not a file or does not exist.')
 
 def _verify_hub_address(hub_address):
-    """Raise errors if argument is not a string or not a valid IPv4:PORT string."""
+    """Raise errors if argument is not a valid IPv4:PORT string."""
 
     # raise TypeError if provided argument is not a string
     if type(hub_address) is not str:
-        raise TypeError('Provided hub address is not a string.')
+        raise TypeError('Provided hub address is not string or bytes.')
 
     # split on double-dot to get IP address part and port
     try:
@@ -71,9 +72,9 @@ def _verify_hub_address(hub_address):
         socket.inet_aton(ip)
 
         # check valid port
-        port_in_range = (int(port) >= 0 or int(port) <= 65535)
+        is_port_in_range = (int(port) >= 0 and int(port) <= 65535)
 
-        if not port_in_range:
+        if not is_port_in_range:
             raise Exception('Port is invalid')
 
     except:
@@ -82,8 +83,9 @@ def _verify_hub_address(hub_address):
 def _verify_output_path(output_path):
     """Raise errors if argument is not a string or not a valid path."""
 
-    # raise TypeError if provided argument is not a string
-    if type(output_path) is not str:
+    # raise TypeError if provided argument is not a string or bytestring
+    type_path = type(output_path)
+    if (type_path is not str) and (type_path is not bytes):
         raise TypeError('Provided output path is not a string.')
 
     # ValueError if path does not exist
@@ -103,8 +105,12 @@ def librarify(input_file, hub_address, chunk_size=BOOK_SIZE, output_path=None):
         Should include the path if the file isn't in the 
         current working directory.
     hub_address -- a string giving the address of the tracker and the port
+        Should be in the following format: 'IPv4:PORT'.
         For example, '192.168.1.1:7777' is a valid hub address.
-    chunk_size -- size, in bytes, of each piece, excluding the last one
+    chunk_size -- (int) size of each piece, in bytes.
+        The input file will be split into chunks of the specified size.
+    output_path -- (default None) is a path where libr file will be saved.
+        If None, saves .libr in the same directory as input file.
     """
 
     # ERROR CHECKING AND HANDLING
@@ -115,7 +121,8 @@ def librarify(input_file, hub_address, chunk_size=BOOK_SIZE, output_path=None):
     _verify_hub_address(hub_address)
 
     # make sure output_path is ok, if provided
-    _verify_output_path(output_path)
+    if output_path:
+        _verify_output_path(output_path)
 
 
     data = {'hub_address': hub_address, 'chunk_size': chunk_size}
@@ -134,6 +141,7 @@ def librarify(input_file, hub_address, chunk_size=BOOK_SIZE, output_path=None):
             chunk_hash = _bytes_to_sha1(chunk_bytes)
             # save these values
             hashes.append(chunk_hash)
+    
     data['hashes'] = hashes
 
     # get file size
@@ -142,7 +150,7 @@ def librarify(input_file, hub_address, chunk_size=BOOK_SIZE, output_path=None):
     assert( len(hashes) == math.ceil(file_size/chunk_size) )
     data['file_size'] = file_size
 
-    # get filename, save it, chop off extension
+    # get filename with extension, save it, chop off extension
     input_file_directory, file_name = os.path.split(input_file)
     data['file_name'] = file_name
     pure_name, _ = os.path.splitext(file_name)
@@ -154,7 +162,9 @@ def librarify(input_file, hub_address, chunk_size=BOOK_SIZE, output_path=None):
     output_path = os.path.join(output_path, PREFIX + pure_name + EXTENSION)
 
     with open(output_path, 'w') as outfile:
-        json.dump(data, outfile, separators=(',', ': '))
+        json.dump(data, outfile,
+            indent=4, sort_keys=True,
+            separators=(',', ': '))
 
     # OUTPUT: the path to the newly created .libr file
     return output_path
@@ -176,9 +186,11 @@ class TestVerificationFunctions(unittest.TestCase):
 
         # check for incorrect path or non-existent file
         with self.assertRaises(ValueError):
-            _verify_input_file('abracadabra')
+            _verify_input_file('abracadabra123')
 
     def test__verify_hub_address(self):
+        # standard acceptance test
+        self.assertEqual(_verify_hub_address('192.168.1.1:7777'), None)
         
         # check for non-string input
         with self.assertRaises(TypeError):
@@ -186,7 +198,7 @@ class TestVerificationFunctions(unittest.TestCase):
         
         # check for gibberish
         with self.assertRaises(ValueError):
-            _verify_hub_address('abracadabra')
+            _verify_hub_address('abracadabra123')
 
         # check for incorrect IPv4
         with self.assertRaises(ValueError):
@@ -214,7 +226,7 @@ class TestVerificationFunctions(unittest.TestCase):
 
         # check for incorrect path or non-existent file
         with self.assertRaises(ValueError):
-            _verify_input_file('abracadabra')  
+            _verify_input_file('abracadabra123')  
 
 
 if __name__ == '__main__':
