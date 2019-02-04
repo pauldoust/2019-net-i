@@ -1,4 +1,8 @@
-import netutils
+# from project.player.app.utilites.netutils import Netutils
+import sys
+sys.path.insert(0,'..')
+from utilites.netutils import *
+
 import socket as sock
 from threading import Thread
 import queue
