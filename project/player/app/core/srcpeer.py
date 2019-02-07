@@ -1,7 +1,7 @@
 ########################################################################################################################
-# @ Module : Peer
+# @ Module : Source Peer
 #
-# @ Author : EMMA (Group J)
+# @ Author : EMMA (Group I)
 # @ Course : Computer Network
 # @ Since  : January 2019
 # @ Desc   : This Module  implements all Candidate Peers/Players  protocols
@@ -18,9 +18,9 @@ import json
 from project.player.app.utilites.netutils import Netutils
 
 
-class Peer:
+class SrcPeer:
     ####################################################################################################################
-    #                                           PEER MODULE
+    #                                        SOURCE/CANDIDATE PEER MODULE
     ####################################################################################################################
 
     def __init__(self, peer_ip, peer_port):
@@ -192,5 +192,5 @@ class Peer:
         return Netutils.read_line(self.peer_socket)
 
     ####################################################################################################################
-    #                                    END OF  PEER MODULE
+    #                                    END OF SOURCE/CANDIDATE PEER MODULE
     ####################################################################################################################

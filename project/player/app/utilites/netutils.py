@@ -1,7 +1,7 @@
 ########################################################################################################################
 # @ Module : Netutils
 #
-# @ Author : EMMA (Group J)
+# @ Author : EMMA (Group I)
 # @ Course : Computer Network
 # @ Since  : January 2019
 # @ Desc   : This Module  implements all networks related helper functions
@@ -19,7 +19,7 @@ import  socket
 
 class Netutils:
     ####################################################################################################################
-    #                                           PEER MODULE
+    #                                           NETUTILS MODULE
     ####################################################################################################################
 
     def __init__(self):
@@ -54,10 +54,14 @@ class Netutils:
             if b == b"\n" and was_r:
                 break
             if was_r:
-                res += b"\r";
+                res += b"\r"
             if b == b"\r":
-                was_r = True;
+                was_r = True
             else:
-                was_r = False;
-                res += b;
+                was_r = False
+                res += b
         return res.decode("utf-8")
+
+    ####################################################################################################################
+    #                                          END NETUTILS MODULE
+    ####################################################################################################################

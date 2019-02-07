@@ -1,7 +1,7 @@
 ########################################################################################################################
 # @ Module : DummyCandidatePeer
 #
-# @ Author : EMMA (Group J)
+# @ Author : EMMA (Group I)
 # @ Course : Computer Network
 # @ Since  : January 2019
 # @ Desc   : This Module  emulates a Candidate Peer (Peer that provided needed library book(s) )
@@ -16,6 +16,8 @@
 ##################
 
 from threading import Thread
+
+from project.player.app.core.inpeer import InPeer
 from project.player.app.utilites.netutils import Netutils
 import socket
 import json
@@ -35,8 +37,12 @@ def handle_acceptall():
         server_socket.listen()
         print("Dummy Server Started")
         while True:
+
             client_con, client_address = server_socket.accept()
             print("Client connected ...")
+            print("Incoming peer length", InPeer.incoming_peer_length)
+            incoming_peer = InPeer(client_con, client_address)
+            #incoming_peer.handle_request().start()
             handle_client(client_con).start()
 
     t = Thread(target=handle)
@@ -90,7 +96,6 @@ def handle_client(socket):
 
     t = Thread(target=handle)
     return t
-
 
 if __name__ == "__main__":
     main()
