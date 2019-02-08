@@ -36,7 +36,15 @@ In each protocol, we describe the **request** format/synopsis as sent by Player 
 - **Response**: 
 
 	`200 [list_of_peers_length] [list_of_peers]`
-	  
+	
+	`300`
+		
+	`400` 
+	
+	`401` 
+	
+	`402` 
+	
 	`500` 
 
 	 * variables  description
@@ -49,7 +57,11 @@ In each protocol, we describe the **request** format/synopsis as sent by Player 
 	 
 	   * **200** : OK / Request Successfully handled
 	   * **300** : Tracker Busy 
+	   * **400** : Unknown / Invalid   Command 
+	   * **401** : Invalid  Command Syntax
+	   * **402** : Invalid  Command argument(s) 
 	   * **500** : Tracker Sever Error 
+	   
 	  
 	   
  - **Sample request(s) and response(s)** 
@@ -87,6 +99,14 @@ A typical scenario will be the first peer registering itself via this Protocol a
   - **Response** 
 	
 	`200`
+	
+	`300`
+	
+	`400` 
+	
+	`401` 
+	
+	`402` 
 	 
 	`500` 
 	
@@ -94,6 +114,9 @@ A typical scenario will be the first peer registering itself via this Protocol a
 	 
 	   * **200** : OK / Player has been successfully registered 
 	   * **300** : Tracker Busy 
+	   * **400** : Unknown / Invalid   Command 
+	   * **401** : Invalid  Command Syntax
+	   * **402** : Invalid  Command argument(s)   
 	   * **500** : Tracker Sever Error 
 
  - **Sample request(s) and response(s)** 
