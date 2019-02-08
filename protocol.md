@@ -1,25 +1,56 @@
-# Protocol 
+# EMMA TORRENT PROTOCOL  
+
 
 - **Version** : 0.1
 - **Created on**:  08/02/2019
 - **Created by**:  Group I  & Group J  
-- **Description** : Bit Torrent Like system on P2P netwok 
+- **Created at**:  Universite  Jean Monnet ( Computer Networks Class - Master I  ) 
 
 
+ This document discusses all protocols  needed to integrate to the **EMMA Torrent** over P2P network.
+ The **EMMA Torrent**  is essentially composed of the below entities.
+ 
+ > **Player** : Peer(s)/Client(s) on the network that can  request and distribute  book(s) (file chunk)  from/to other peer/client.
+ >
+ > **Tracker** : Central server that keeps track of all peers (IP and PORT) registered to specifics libraries( metadata of the file to download) and avails those resources on its socket interface  .
+
+ 
+ 
+ All The protocols stated below have to be implemented by any Peer/Player wishing to communicate with the Tracker or exchange books/ file chunck
+ with other peers/Players over this P2P network. 
+   
+
+
+> ###**FORMATTING**
+> 
+> All the requests and responses in every protocol follow the below structure/synopsis  
+>
+> **REQUEST SYNOPSIS**  : 
+>
+>     [COMMAND] [ARG_1] [ARG_2] ... [ARG_N] \r\n
+>
+>  > **COMMAND**: The Request Keyword or indentify.  
+>  >
+>  > **[ARG_1] [ARG_2] ... [ARG_N]**: Set of arguments sent along with the *COMMAND*. 
+>
+> **RESPONSE SYNOPSIS** 
+>   
+>     [STATUS_CODE] [RESP_1] [RESP_2] ... [RESP_N] \r\n
+>  > **STATUS_CODE**: The response status code .
+>  >
+>  > **[RESP_1] [RESP_2] ... [RESP_N]**: Set of responses parameters returned along the *STATUS_CODE*.
+>  
 
 
 ## Communication between  Player and  Tracker 
 
 
-Here, we will describe all protocols  needed to communicate with the tracker. 
-> **Reminder**  
+This section  discusses all protocols  needed  by a player to communicate with the tracker. 
 
-> **Player** is a peer/client on the network that can  request and distribute  a file chunk (book) from/to other peer/client 
->
->**Tracker** is the central server that keeps track of all peers (IP and PORT) registered to specifics libraries and avails those resources on its socket interface   
+In each protocol, we describe the **request** format/synopsis as sent by Player, all possible **responses** contents returned by  Tracker , the  **variables** ( enclosed into brackets )  in the request and/or response synopsis  as well as as well sample request(s) and response(s).
 
-In each protocol, we describe the **request** format/synopsis as sent by Player , the **response** contents returned by  Tracker , the  **variables** ( enclosed into brackets )  in the request and/or response synopsis  as well as as well sample request(s) and response(s). 
 
+> **Note**: The set of characters used to mark the end of all request and response synopsis in the below protocols  will be  "**\r\n**"
 
 
 ##### 1. LIST PEERS 
@@ -140,9 +171,8 @@ A typical scenario will be the first peer registering itself via this Protocol a
 
 
 This section describes all  protocols one need to implement on a Player's end in other to interact with other Player(s) on the network. 
-> **Reminder**:  **Player** is a peer/client on the network that can  request and distribute  a file chunk (book) from/to other peer/client 
 
-In each protocol, we  describe the **request** format/synopsis as sent by Player A , the **response** contents returned by  Player B , the  **variables** ( enclosed into brackets )  in the request and/or response synopsis  as well as as well as sample request(s) and response(s). 
+In each protocol, we  describe the **request** format/synopsis as sent by Player A , all  possible **responses** contents returned by  Player B , the  **variables** ( enclosed into brackets )  in the request and/or response synopsis  as well as as well as sample request(s) and response(s). 
 
 > **Note**: The set of characters used to mark the end of all request and response synopsis in the below protocols  will be  "**\r\n**"
 
@@ -164,6 +194,12 @@ used just after socket connection between Player A and Player B  or whenever Pla
 	`200`
 	
 	`300`  
+    
+    `400` 
+	
+	`401` 
+	
+	`402` 
 	
 	`500` 
 	 
@@ -171,7 +207,10 @@ used just after socket connection between Player A and Player B  or whenever Pla
 	 
 	   * **200** : Peer is alive/Available 
 	   * **300** : Peer Busy 
-	   * **500** : Peer Sever Error 
+	   * **400** : Unknown / Invalid   Command 
+	   * **401** : Invalid  Command Syntax
+	   * **402** : Invalid  Command argument(s) 
+	   * **500** : Peer Server Error 
 	  
 
  
@@ -209,6 +248,12 @@ used just after socket connection between Player A and Player B  or whenever Pla
 	`200 [requested_book_length] [requested_book] `
 	
 	`300`
+	
+	`400` 
+	
+	`401` 
+	
+	`402` 
 	 
 	`500` 
 	 
@@ -224,7 +269,10 @@ used just after socket connection between Player A and Player B  or whenever Pla
 	 
 	   * **200** : OK / Request Successfully handled
 	   * **300** : Peer Busy 
-	   * **500** : Peer Sever Error 
+	   * **400** : Unknown / Invalid   Command 
+	   * **401** : Invalid  Command Syntax
+	   * **402** : Invalid  Command argument(s) 
+	   * **500** : Peer Server Error 
 	   * **600** : Chunk / Book Not Available 
 	  
 
@@ -260,6 +308,12 @@ used just after socket connection between Player A and Player B  or whenever Pla
 - **Response** 
 	
 	`200 [length_list_of_available_book] [ids_list_of_available_book]`
+		
+	`400` 
+	
+	`401` 
+	
+	`402` 
 	
 	`500` 
 	
@@ -272,7 +326,10 @@ used just after socket connection between Player A and Player B  or whenever Pla
 	 
 	   * **200** : OK / Request Successfully handled
 	   * **300** : Peer Busy 
-	   * **500** : Peer Sever Error 
+	   * **400** : Unknown / Invalid   Command 
+	   * **401** : Invalid  Command Syntax
+	   * **402** : Invalid  Command argument(s) 
+	   * **500** : Peer Server Error 
 
 
  - **Sample request(s) and response(s)** 
