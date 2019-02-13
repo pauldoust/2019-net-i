@@ -202,6 +202,8 @@ used just after socket connection between Player A and Player B  or whenever Pla
 	`402` 
 	
 	`500` 
+	
+	
 	 
 	 * status codes description 
 	 
