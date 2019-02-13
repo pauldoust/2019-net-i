@@ -45,18 +45,21 @@ class SrcPeer:
         *****************************************
         """
         command = "PING"
-
+        print("writing to socket ...")
         # Sending <Ping> Request to Candidate Peer ...
         self.sock_write(command)
-
+        print("waiting for socket response ...")
         # Reading Response from Candidate Peer ...
         response = self.sock_read()
 
+        print(response)
         # Decoding response from Candidate Peer ...
         if response == "200":
             return True
         else:
             return False
+
+
 
     def get_available_books(self, library_id):
         """
@@ -190,6 +193,58 @@ class SrcPeer:
         *****************************************
         """
         return Netutils.read_line(self.peer_socket)
+
+    """
+    TO DELETE
+    """
+    def list_peers(self, library_id):
+        """
+        *****************************************
+        Method used to list peers given a library id
+
+        :return:
+        *****************************************
+        """
+        command = "LIST_PEERS {}".format(library_id)
+        print("writing to socket ...", command)
+        # Sending <Ping> Request to Candidate Peer ...
+        self.sock_write(command)
+        print("waiting for socket response ...")
+        # Reading Response from Candidate Peer ...
+        response = self.sock_read()
+        print("reading response from socket ...", response)
+
+        print(response)
+        # Decoding response from Candidate Peer ...
+        if response == "200":
+            return True
+        else:
+            return False
+
+    def register_peer(self, library_id, ip , port ):
+        """
+        Method used to register a peer to the tracker
+
+        :param library_id:
+        :param ip:
+        :param port:
+        :return:
+        """
+        command = "REGISTER_PEER {} {} {}".format(library_id, ip , port)
+        print("writing to socket ...", command)
+        # Sending <Register peer> Request to Candidate Peer ...
+        self.sock_write(command)
+        print("waiting for socket response ...")
+        # Reading Response from Candidate Peer ...
+        response = self.sock_read()
+        print("reading response from socket ...", response)
+
+        print(response)
+        # Decoding response from Candidate Peer ...
+        if response == "200":
+            return True
+        else:
+            return False
 
     ####################################################################################################################
     #                                    END OF SOURCE/CANDIDATE PEER MODULE
