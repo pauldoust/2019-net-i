@@ -14,23 +14,13 @@
 ##################
 # @ DEPENDENCIES
 ##################
-import  socket
+import socket
 
 
 class Netutils:
     ####################################################################################################################
     #                                           NETUTILS MODULE
     ####################################################################################################################
-
-    def __init__(self):
-        """
-        *****************************************
-        Default Class
-
-        *****************************************
-        """
-        pass
-
 
     @staticmethod
     def read_line(f):
@@ -61,6 +51,37 @@ class Netutils:
                 was_r = False
                 res += b
         return res.decode("utf-8")
+
+
+    @staticmethod
+    def get_my_local_ip():
+        """
+        *****************************************
+           Method used to get IP Address on Local
+           Network
+
+           :return String [UTF-8 ]
+
+        *****************************************
+        """
+        hostname = socket.gethostname()
+        IPAddr = socket.gethostbyname(hostname)
+        return str(IPAddr)
+
+    @staticmethod
+    def get_my_remote_ip():
+        """
+        *****************************************
+           Method used to get Remote IP Address
+           Network
+
+           :return String [UTF-8 ]
+
+        *****************************************
+        """
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        s.connect(("8.8.8.8", 80))
+        return s.getsockname()[0]
 
     ####################################################################################################################
     #                                          END NETUTILS MODULE

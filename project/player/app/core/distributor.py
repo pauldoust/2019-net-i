@@ -37,7 +37,7 @@ class Distributor:
     @staticmethod
     def start_service(distributor_port=None):
         if distributor_port is None:
-            distributor_port = random.randrange(1023, 65535)
+            distributor_port = 5001#random.randrange(1023, 65535)
 
         Distributor.handle_accept_all(distributor_port).start()
 
@@ -59,6 +59,16 @@ class Distributor:
 
         t = Thread(target=handle, args=[distributor_port])
         return t
+
+    @staticmethod
+    def get_ip():
+        pass
+
+    @staticmethod
+    def get_port(self):
+        pass
+
+
 
     ####################################################################################################################
     #                                        END DISTRIBUTOR MODULE

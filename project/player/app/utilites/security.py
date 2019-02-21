@@ -14,7 +14,7 @@
 ##################
 # @ DEPENDENCIES
 ##################
-
+import hashlib
 
 
 class Security:
@@ -22,18 +22,8 @@ class Security:
     #                                           SECURITY MODULE
     ####################################################################################################################
 
-    def __init__(self):
-        """
-        *****************************************
-        Default Class
-
-        *****************************************
-        """
-        pass
-
-
     @staticmethod
-    def sha1(book):
+    def sha1(chunk):
         """
         *****************************************
         Method create a sha1 checksum
@@ -44,7 +34,10 @@ class Security:
 
         *****************************************
         """
-        pass
+        hasher = hashlib.sha1()
+        hasher.update(chunk)
+        result = hasher.hexdigest()
+        return result
 
     ####################################################################################################################
     #                                          END SECURITY MODULE
