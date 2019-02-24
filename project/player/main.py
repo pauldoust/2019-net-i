@@ -14,14 +14,20 @@
 # @ DEPENDENCIES
 ##################
 # Loading Settings params ...
-from project.player.app.core.distributor import Distributor
+from app.services.distributor import Distributor
+from app.services.requestor import Requestor
+import time
 
 ########################################################################################################################
 #                                          MAIN   MODULE
 ########################################################################################################################
 
 # Starting Distributor Service
-Distributor.start_service(5001)
+Distributor.start_service(5002)
+
+time.sleep(5)
+# Starting Requestor Service
+Requestor.start_service()
 
 ########################################################################################################################
 #                                         END MAIN   MODULE

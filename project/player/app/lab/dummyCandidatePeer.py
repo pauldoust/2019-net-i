@@ -17,8 +17,8 @@
 
 from threading import Thread
 
-from project.player.app.core.inpeer import InPeer
-from project.player.app.utilites.netutils import Netutils
+from app.core.inpeer import InPeer
+from app.utilites.netutils import Netutils
 import socket
 import json
 

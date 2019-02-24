@@ -13,7 +13,7 @@
 ##################
 # @ DEPENDENCIES
 ##################
-from project.player.app.core.srcpeer import SrcPeer
+from app.core.srcpeer import SrcPeer
 import time
 import random
 from threading import Thread
@@ -21,8 +21,12 @@ from threading import Thread
 ##################
 # @ GLOBAL
 ##################
-CANDIDATE_PEER_IP = "192.168.43.188"
-CANDIDATE_PEER_PORT = 7777
+from app.core.tracker import Tracker
+from app.settings.config import Config
+from app.utilites.netutils import Netutils
+
+CANDIDATE_PEER_IP = "127.0.0.1"
+CANDIDATE_PEER_PORT = 5002
 
 class UnitTest:
     ####################################################################################################################
@@ -45,7 +49,9 @@ class UnitTest:
     def test_peer_get_available_books():
         peer = SrcPeer(CANDIDATE_PEER_IP, CANDIDATE_PEER_PORT)
         peer.connect()
-        print(peer.get_available_books("lib-0001"))
+        #print(peer.get_available_books("lib_1550883701")
+        print(peer.get_available_books("lib_1550924691"))
+
         peer.disconnect()
         time.sleep(5)
 
@@ -53,25 +59,31 @@ class UnitTest:
     def test_peer_request_books():
         peer = SrcPeer(CANDIDATE_PEER_IP, CANDIDATE_PEER_PORT)
         peer.connect()
-        print(peer.request_book("lib-0001", "book-0001"))
+        print(peer.request_book("lib_1550916735", "6"))
         peer.disconnect()
         time.sleep(5)
 
     @staticmethod
     def test_list_peers():
-        peer = SrcPeer(CANDIDATE_PEER_IP, CANDIDATE_PEER_PORT)
-        peer.connect()
+        tracker = Tracker("198.58.103.254", "7777")
         print("connecting ...")
-        print(peer.list_peers("lib00005"))
-        peer.disconnect()
+        print(tracker.list_peers("lib-001"))
+        print(tracker.list_peers("lib_1550861917"))
+
+        tracker.disconnect()
 
     @staticmethod
     def test_register_peer(port_end):
-        peer = SrcPeer(CANDIDATE_PEER_IP, CANDIDATE_PEER_PORT)
-        peer.connect()
+        tracker = Tracker("198.58.103.254", "7777")
         print("connecting ...")
-        print(peer.register_peer("lib00005","192.168.43.142", "99{}".format(port_end)))
-        peer.disconnect()
+        #print(tracker.register_peer("lib-001","127.0.0.1", "5002"))
+        #print(tracker.register_peer("lib_1550924691", "127.0.0.1", "5001"))
+        #print(tracker.register_peer("lib_1550924691", "127.0.0.1", "5002"))
+        #print(tracker.register_peer("lib_1550924691", "127.0.0.1", "5003"))
+        #print(tracker.register_peer("lib_1550924691", "127.0.0.1", "5004"))
+        print(tracker.register_peer("lib_1550916735", "127.0.0.1", "5002"))
+
+        tracker.disconnect()
 
     ####################################################################################################################
     #                                         END UNIT_TEST MODULE
@@ -82,13 +94,19 @@ if __name__ == "__main__":
         #UnitTest.test_peer_ping()
         #UnitTest.test_peer_get_available_books()
         #UnitTest.test_peer_request_books()
-        UnitTest.test_list_peers()
+        UnitTest.test_register_peer("22")
+        #UnitTest.test_list_peers()
 
        # t = Thread()
        # for i in range(1,1000):
        #   t = Thread(target=UnitTest.test_register_peer(i))
        #    t.run()
 
+        #print( Netutils.get_my_remote_ip() )
+        print(Config.LIBS_DIR)
+
         # requestor
         # distributor
         # queue
+        #print(repr(bytearray(list(b"www"))))
+        print( Netutils.diff_list(list(range(0,5)), list(range(0,10))))
