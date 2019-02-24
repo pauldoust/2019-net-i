@@ -15,6 +15,7 @@
 # @ DEPENDENCIES
 ##################
 import socket
+import time
 
 
 class Netutils:
@@ -82,6 +83,29 @@ class Netutils:
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         s.connect(("8.8.8.8", 80))
         return s.getsockname()[0]
+
+
+    @staticmethod
+    def get_timestamp():
+        """
+        *****************************************
+           Method used to generate a timestamp
+           eg: 1589164318
+
+           :return String [UTF-8 ]
+
+        *****************************************
+        """
+        return str(int(time.time()))
+
+
+    @staticmethod
+    def diff_list(list_a, list_b) :
+        if len(list_a) > len(list_b):
+            return  list( set(list_a) - set(list_b))
+        else:
+            return list(set(list_b) - set(list_a))
+
 
     ####################################################################################################################
     #                                          END NETUTILS MODULE
