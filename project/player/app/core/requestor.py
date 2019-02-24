@@ -16,14 +16,22 @@
 ##################
 from pathlib import Path
 from threading import Thread
-from project.player.app.core.srcpeer import SrcPeer
-from project.player.app.core.tracker import  Tracker
-from project.player.app.settings.config import Config
+
+from app.core.distributor import Distributor
+from app.core.srcpeer import SrcPeer
+from app.core.tracker import  Tracker
+from app.librarifier.stuff import Stuff
+from app.librarifier.book import Book
+from app.settings.config import Config
 import socket
 import random
+import copy
 import time
 import os
 import json
+
+from app.utilites.netutils import Netutils
+from app.utilites.security import Security
 
 
 class Requestor:
@@ -104,6 +112,7 @@ class Requestor:
 
     @staticmethod
     def get_pending_libraries():
+        # TODO: Persisting  list of Pending Lib ...
         return Config.LIST_PENDING_LIB
 
 
@@ -119,15 +128,26 @@ class Requestor:
 
         def handle(library_id):
 
-
-            preprocess_flag = True
-            connected_players = list()
             print("starting new library job ....", library_id)
             Requestor.no_library_jobs += 1
 
-            # Loading details about pending library ( Tracker IP and Port,  missing books )...
-            library_path = Config.LIBS_DIR+os.sep+library_id+".lib"
+            # Shared vars for library Job
+            # ---------
+            preprocess_flag = True
+            library_job_status = True
+            player_pool = dict()
+            collected_books = []
+            stuff_object = None
             library_object = None
+            library_checksums = list()
+            library_path = Config.LIBS_DIR + os.sep + library_id + ".lib"
+            stuff_file_path = Config.STUFFS_DIR + os.sep + library_id + ".pkl"
+            self_hub_registration_flag =  False
+            # ---------
+
+
+
+            # Loading details about pending library ( Tracker IP and Port,  missing books )...
             print("libpath", library_path)
 
             library_file = Path(library_path)
@@ -139,81 +159,151 @@ class Requestor:
 
                     print(document)
                     library_object = json.loads(document)
+                    library_checksums = library_object['hashes']
+                    # Loading / Creating  stuff ...
+
+                    sfuff_file = Path(stuff_file_path)
+                    if sfuff_file.exists():
+                        stuff_object = Stuff.load(stuff_file_path)
+                    else:
+                        stuff_object = Stuff()
+                        no_books = len(library_object['hashes'])
+                        stuff_object.createSeedBooks(no_books)
+                        stuff_object.persist(stuff_file_path)
+
 
                 if library_object is None :
                     print("Library file could not be decoded", library_id)
                     preprocess_flag = False
+
             else:
                 print("Library file not Found", library_id)
                 preprocess_flag = False
 
+            library_job_status = preprocess_flag
+
             # Creating a library Job ...
-            while preprocess_flag:
-                # Connecting to the Tracker and sending request
-                print("Connecting to hub", library_id)
-                hub_address =  str(library_object["hub_address"]).split(":")
-                tracker = Tracker(hub_address[0], hub_address[1])
-                tracker.connect()
-                player_pool = dict()
-                print("Connected to hub", library_id)
-                res_code, res_data_length, res_data = tracker.list_peers(library_id)
+            while library_job_status:
+                try:
+                    # Connecting to the Tracker and sending request
+                    print("Connecting to hub", library_id)
+                    hub_address =  str(library_object["hub_address"]).split(":")
+                    tracker = Tracker(hub_address[0], hub_address[1])
 
-                # In case < list player > was successful ....
-                if res_code == "200":
-                    print(res_data)
-                    list_of_peers = json.loads(res_data)
+                    print("Connected to hub", library_id)
+                    res_code, res_data_length, res_data = tracker.list_peers(library_id)
 
-                    # Building pool of candidate players ( <str,srcPeers> ) ...
-                    for player in list_of_peers:
-                        player_parts = str(player).split(":")
-                        player_id = player_parts[0]+":" + player_parts[1]
-                        if player_id not in player_pool:
-                            player_pool[player_id] = SrcPeer(player_parts[0], player_parts[1])
+                    # In case < list player > was successful ....
+                    if res_code == "200":
+                        print(res_data)
+                        list_of_peers = json.loads(res_data)
+                        # Register self Distributor on Hub
+                        if self_hub_registration_flag is False:
+                            print("Registering current player on hub", library_id)
+                            print("Distributor port" , Distributor.get_port())
+                            # TODO: Use the real port instead of the hardcoded one
+                            if tracker.register_peer(library_id, Distributor.get_ip(), Distributor.get_port()) is True:
+                                print("successfully registered on  hub")
+                                self_hub_registration_flag = True
 
-                    print("player_pool", player_pool)
+                        my_player_id = "127.0.0.1" + ":" + str(Distributor.get_port())
+                        # Building pool of candidate players ( <str,srcPeers> ) ...
+                        for player in list_of_peers:
+                            player_parts = str(player).split(":")
+                            player_id = player_parts[0]+":" + player_parts[1]
 
-                    # Monitoring  the peers activity until no more books in available from SrcPeer ...
-                    while len(player_pool) > 0:
-                        # look
-                        print("monitoring players activity  ...")
-                        player_blacklist = []
+                            if player_id not in player_pool:
+                                if player_id != my_player_id:
+                                    player_pool[player_id] = SrcPeer(player_parts[0], player_parts[1])
+                                    player_pool[player_id].download_job(library_id, collected_books, stuff_object, library_object).start()
+                                else:
+                                    print("same player_id", player_id)
 
-                        # Verifying players' activity ...
+                        print("player_pool", player_pool)
+
+
+                        # Monitoring  the peers activity until no more books in available from SrcPeer ...
+                        while len(player_pool) > 0:
+                            try:
+                                # look
+                                print("monitoring players activity  ...")
+                                player_blacklist = []
+
+                                # Verifying players' activity ...
+                                for player_id in player_pool:
+                                    print("monitoring activity of player_id ", player_id)
+                                    if player_pool[player_id].get_activity_status() is False:
+                                        player_blacklist.append(player_id)
+
+                                # Collecting all buffered books, check their validity against signature and flush them to stuff ...
+                                print("collected_books_to_flush", collected_books)
+
+                                if len(collected_books) > 0:
+
+                                    while len(collected_books) > 0:
+                                        cur_book = collected_books[0]
+                                        print("cur_book", cur_book)
+                                        collected_books.remove(cur_book)
+                                        # Checking  the current book against the checksum before adding book(s) to stuff
+                                        if Security.sha1(cur_book[1]) == library_checksums[cur_book[0]]:
+                                            stuff_object.storeBook(cur_book[1], int(cur_book[0]))
+                                        else:
+                                            print("book discarded", Security.sha1(cur_book[1]) ,library_checksums[cur_book[0]])
+
+
+                                    # set time of last flush
+                                    print("flushing ...")
+                                    stuff_object.persist(stuff_file_path)
+
+                                #TODO: Reviewing queue distribution ... ( This process is done at src level)
+
+
+                                # Removing Blacklisted Candidate Players from current Pool ...
+                                for player_id in player_blacklist:
+                                    print("removing blacklisted player_id from Pool ", player_id)
+                                    del(player_pool[player_id])
+
+                                print("is_complete", stuff_object.list_book_received )
+                                # Checking whether stuff has been fully downloaded ...
+                                if stuff_object.is_download_complete():
+                                    print("File completely downloaded ")
+                                    # Building file to download Repository
+                                    download_path = Config.DOWNLOAD_DIR + os.sep +library_object['file_name']
+                                    stuff_object.flushToFile(download_path)
+                                    library_job_status = False
+                                    # TODO : Remove library_id among pending  library ...
+                                    break
+
+                            except Exception as e:
+                                print("Exception: ",e)
+
+                            time.sleep(3)
+                            # ------ End of Monitoring ------
+
+                    # In case < list player > failed ....
+                    else:
+                        print("error while listing peers.")
+                        break
+
+
+                    # In Library is to be stopped, suspend activities on player pool if any ...
+                    if library_job_status is False:
+                        # Suspend all current candidates peer
                         for player_id in player_pool:
-                            print("monitoring activity of player_id ", player_id)
                             # player_pool[player_id]
-                            if player_pool[player_id].get_activity_status() is False:
-                                player_blacklist.append(player_id)
+                            player_pool[player_id].set_activity_status(False)
 
-                        # Reviewing queue distribution ...
-
-                        # Removing Blacklisted Candidate Players from current Pool  ...
-                        for player_id in player_blacklist:
-                            print("removing blacklisted player_id from Pool ", player_id)
-                            del(player_pool[player_id] )
-
-                        time.sleep(20)
-
-
-
-                    # Build the Library Book Priority Queue ...
-                    # Connect to all Players, ping and perform book discovery ...
-
-                    # Distribute all the batch of books to SrcPeers ( which will notify the Requestor service once done)
-
-                # In case < list player > failed ....
-                else:
-                    print("error while listing peers")
-
-                time.sleep(20)  # Seconds
-                break # Exit from library Job ( this action should be done when library is fully downloaded or we cant connect to hub )
-
+                    time.sleep(20)  # Seconds
+                    # ---------  End Library job cycle ----------
+                    #break # Exit from library Job ( this action should be done when library is fully downloaded or we cant connect to hub )
+                except Exception as e :
+                    print("Exception", e)
+                    pass
             Requestor.no_library_jobs -= 1
             print("exiting  library job ....", library_id)
+            # ---------  End Library job  ----------
         t = Thread(target=handle, args=[_library_id])
         return t
-
-
 
     ####################################################################################################################
     #                                        END REQUESTOR MODULE

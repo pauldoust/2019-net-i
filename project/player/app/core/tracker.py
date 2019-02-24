@@ -15,7 +15,7 @@
 ##################
 import socket
 import json
-from project.player.app.utilites.netutils import Netutils
+from app.utilites.netutils import Netutils
 
 
 class Tracker:
@@ -47,10 +47,12 @@ class Tracker:
         command = "LIST_PEERS {}".format(library_id)
         print("writing to socket ...", command)
         # Sending <Ping> Request to Candidate Peer ...
+        self.connect()
         self.sock_write(command)
         print("waiting for socket response ...")
         # Reading Response from Candidate Peer ...
         response_str = self.sock_read()
+        self.disconnect()
         print("reading response from socket ...", response_str)
 
         try:
@@ -86,10 +88,12 @@ class Tracker:
         command = "REGISTER_PEER {} {} {}".format(library_id, ip, port)
         print("writing to socket ...", command)
         # Sending <Register peer> Request to Candidate Peer ...
+        self.connect()
         self.sock_write(command)
         print("waiting for socket response ...")
         # Reading Response from Candidate Peer ...
         response = self.sock_read()
+        self.disconnect()
         print("reading response from socket ...", response)
         print(response)
         # Decoding response from Candidate Peer ...

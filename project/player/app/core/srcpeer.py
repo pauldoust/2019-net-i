@@ -13,9 +13,14 @@
 ##################
 # @ DEPENDENCIES
 ##################
+import base64
 import socket
 import json
-from project.player.app.utilites.netutils import Netutils
+from threading import Thread
+import  time
+
+from app.librarifier.book import Book
+from app.utilites.netutils import Netutils
 
 
 class SrcPeer:
@@ -23,7 +28,7 @@ class SrcPeer:
     #                                        SOURCE/CANDIDATE PEER MODULE
     ####################################################################################################################
 
-    def __init__(self, peer_ip, peer_port):
+    def __init__(self,  peer_ip, peer_port ):
         """
         *****************************************
         Overloaded Constructor
@@ -32,8 +37,10 @@ class SrcPeer:
         :param peer_port: Integer
         *****************************************
         """
+
         self.peer_ip = peer_ip
         self.peer_port = peer_port
+        self.peer_id = str(peer_ip)+":"+str(self.peer_port)
         self.peer_socket = None
         self.activity_flag = True
 
@@ -60,8 +67,6 @@ class SrcPeer:
         else:
             return False
 
-
-
     def get_available_books(self, library_id):
         """
         *****************************************
@@ -81,15 +86,17 @@ class SrcPeer:
         response = self.sock_read()
 
         # Decoding response from Candidate Peer ...
-        response_parts = response.split()
+        response_parts = response.split(" ")
 
-        if response_parts[0] == "200":
-            list_of_available_books = json.loads(response_parts[1])
-            return [True, list_of_available_books]
-        elif response_parts[0] == "500":
-            return [False, "Candidate Server Error "]
-        else:
-            return [False, "Unknown Exception occured while getting books from Candidate peer"]
+        res_code = str(response_parts[0])
+        res_data = None
+        res_data_length = 0
+
+        if res_code == "200":
+            res_data_length = int(response_parts[1])
+            res_data = str.join("",response_parts[2:])
+
+        return res_code, res_data_length, res_data
 
     def request_book(self, library_id, book_id):
         """
@@ -111,19 +118,45 @@ class SrcPeer:
         response = self.sock_read()
 
         # Decoding response from Candidate Peer ...
-        response_parts = response.split()
+        """
+        response = response.split("b\'")[1]
+        response_parts = response.split(" ")
+        print(response_parts)
 
-        if response_parts[0] == "200":
-            bytes_res = response_parts[1]
-            return [True, bytes_res]
-        elif response_parts[0] == "500":
-            return [False, "Candidate Server Error "]
-        elif response_parts[0] == "600":
-            return [False, "Book Not Available"]
-        elif response_parts[0] == "600":
-            return [False, "Candidate Peer is Busy"]
-        else:
-            return [False, "Unknown Exception occured while getting books from Candidate peer"]
+        res_code = response_parts[0]
+
+        print(res_code)
+        res_data = None
+        res_data_length = 0
+
+        if res_code == "200":
+            res_data_length = int(response_parts[1])
+            res_data =  str.join("",response_parts[2:]).split("\\r\\n")[0]
+            res_data =  res_data.replace("\\\\x","\\x")
+            res_data = res_data.replace("\\\'", "\'")
+            res_data = res_data.replace("bytearray(b\'","")
+            res_data = res_data.replace("\')", "")
+            res_data = bytearray(res_data,"utf-8")
+
+        """
+        response_parts = response.split(" ")
+
+        print(response_parts)
+
+        res_code = response_parts[0].replace("b\"","")
+
+        print(res_code)
+        res_data = None
+        res_data_length = 0
+
+        if res_code == "200":
+            res_data_length = int(response_parts[1])
+            res_data= str.join("",response_parts[2:]).replace("\\r\\n", "")
+            res_data= res_data.replace("b\'","").replace("\"","")
+            res_data = base64.b64decode(res_data)
+            #print(repr(res_data) )
+
+        return res_code, res_data_length, res_data
 
     def connect(self):
         """
@@ -165,10 +198,22 @@ class SrcPeer:
         Method used to  get a candidate peer ip
             address
 
-        :return: Integer
+        :return: String
         *****************************************
         """
         return self.peer_ip
+
+
+    def get_peer_id(self):
+        """
+        *****************************************
+        Method used to  get a candidate peer id
+
+
+        :return: String
+        *****************************************
+        """
+        return self.peer_id
 
     def sock_write(self, str_to_send):
         """
@@ -195,6 +240,17 @@ class SrcPeer:
         """
         return Netutils.read_line(self.peer_socket)
 
+    def set_activity_status(self, status):
+        """
+        *****************************************
+        Method used to  get a activity status
+
+        :param: status : Boolean
+        :return: Void
+        *****************************************
+        """
+        self.activity_flag = status
+
     def get_activity_status(self):
         """
         *****************************************
@@ -205,6 +261,77 @@ class SrcPeer:
         """
         return self.activity_flag
 
+    def download_job(self, _library_id, _collected_books , _stuff_obj ,_library_obj):
+        """
+        *****************************************
+        Method used to run download job
+
+        :param _library_obj:
+        :param _collected_books:
+        :param _stuff_obj:
+        :return: Void
+        *****************************************
+        """
+
+        def handle(_self, library_id, collected_books, stuff_obj, library_obj):
+            print("starting  srcpeer download_job ... ")
+            try:
+                # Connect to peer ...
+                if _self.connect() is False:
+                    _self.set_activity_status(False)
+                else:
+                    # Ping/handshake ...
+                    if _self.ping() is False:
+                        _self.set_activity_status(False)
+
+                while _self.get_activity_status():
+
+                    # Requesting  available books ...
+                    res_code, res_data_length, res_data = _self.get_available_books(_library_id)
+
+                    available_books = list()
+
+                    if res_code == "200":
+                        available_books = json.loads(res_data)
+                        #print("available_books", available_books)
+                    else:
+                        _self.set_activity_status(False)
+                        break
+
+                    # Checking missing books per what is already available in stuff ...
+                    missing_book = Netutils.diff_list( stuff_obj.get_list_book_received(), available_books)
+                    print("list book already received", stuff_obj.get_list_book_received())
+                    print("missing book", missing_book)
+                    if len(missing_book) == 0:
+                        print("No interresting available book(s) from you, I am not interested. bye")
+                        _self.set_activity_status(False)
+                        break
+
+                    # Requesting for all the missing books till none are left ...
+                    for book_id in missing_book:
+                        print("requesting book id ...", book_id)
+                        res_code, res_data_length, res_data = _self.request_book(library_id, book_id)
+
+                        if res_code == "200":
+                            book = res_data
+                            print("received book :", book)
+                            collected_books.append([book_id,book])
+
+
+                    # Requesting books from peers
+
+
+                    time.sleep(14)
+
+                _self.set_activity_status(False)
+                print("exiting  srcpeer  download_job... ", _self.get_peer_id())
+            except Exception as e:
+                print("Exception ", e)
+                _self.set_activity_status(False)
+                pass
+
+        t = Thread(target=handle, args=[self, _library_id, _collected_books, _stuff_obj, _library_obj])
+        return t
 
     ####################################################################################################################
     #                                    END OF SOURCE/CANDIDATE PEER MODULE
