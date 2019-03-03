@@ -14,6 +14,7 @@
 ##################
 # @ DEPENDENCIES
 ##################
+import ipaddress
 import socket
 import time
 
@@ -98,13 +99,26 @@ class Netutils:
         """
         return str(int(time.time()))
 
-
     @staticmethod
-    def diff_list(list_a, list_b) :
-        if len(list_a) > len(list_b):
-            return  list( set(list_a) - set(list_b))
-        else:
-            return list(set(list_b) - set(list_a))
+    def parse_ip_address( my_ip):
+        """
+        *****************************************
+           Method used to validate  ip address
+           syntax IPv4/IPv6
+
+           :return Boolean
+
+        *****************************************
+        """
+        try:
+            ipaddress.ip_address(str(my_ip))
+            return True
+        except Exception as e:
+            #Auxiliaries.console_log(e)
+            return False
+
+
+
 
 
     ####################################################################################################################

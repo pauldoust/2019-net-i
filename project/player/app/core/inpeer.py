@@ -22,6 +22,7 @@ import base64
 
 from app.librarifier.stuff import Stuff
 from app.settings.config import Config
+from app.utilites.auxiliaries import Auxiliaries
 from app.utilites.netutils import Netutils
 
 
@@ -61,9 +62,9 @@ class InPeer:
             while True:
                 try:
                     line = Netutils.read_line(self.peer_socket)
-                    print("\nCommand IN: {} ".format(line))
+                    Auxiliaries.console_log("\nCommand IN: {} ".format(line))
                     if line is None:
-                        print("Client disconnecting ...")
+                        Auxiliaries.console_log("Client disconnecting ...")
                         InPeer.incoming_peer_length = InPeer.incoming_peer_length - 1
                         break
 
@@ -79,30 +80,30 @@ class InPeer:
                     if command == "PING":
                         response_to_send = self.ping_response(req_args)
                         peer_socket.sendall(response_to_send)
-                        print("\nCommand OUT: {} ".format(response_to_send))
+                        Auxiliaries.console_log("\nCommand OUT: {} ".format(response_to_send))
 
                     # GET AVAILABLE BOOK
                     elif command == "GET_AVAILABLE_BOOKS":
                         response_to_send = self.get_available_books_response(req_args)
                         peer_socket.sendall(response_to_send)
-                        print("\nCommand OUT: {} ".format(response_to_send))
+                        Auxiliaries.console_log("\nCommand OUT: {} ".format(response_to_send))
 
                     # REQUEST BOOK
                     elif command == "REQUEST_BOOK":
                         response_to_send = self.get_book_response(req_args)
                         peer_socket.sendall(str.encode("{}\r\n".format(response_to_send)))
-                        print("\nCommand OUT: {} ".format(response_to_send))
+                        Auxiliaries.console_log("\nCommand OUT: {} ".format(response_to_send))
 
                     else:
                         response_to_send = "400"
                         peer_socket.sendall(str.encode("{}\r\n".format(response_to_send)))
-                        print("\nCommand OUT: {} ".format(response_to_send))
+                        Auxiliaries.console_log("\nCommand OUT: {} ".format(response_to_send))
 
                 except Exception as e:
                     response_to_send = "500"
                     peer_socket.sendall(str.encode("{}\r\n".format(response_to_send)))
-                    print("\nCommand OUT: {} ".format(response_to_send))
-                    print("Exception occurred.  disconnecting ...")
+                    Auxiliaries.console_log("\nCommand OUT: {} ".format(response_to_send))
+                    Auxiliaries.console_log("Exception occurred.  disconnecting ...")
                     break
 
         t = Thread(target=handle, args=[self.peer_socket])
@@ -143,15 +144,15 @@ class InPeer:
                 return self.reply(response_to_send)
 
             res_data = json.dumps(list(stuff.get_list_book_received()))
-            print(res_data)
+            Auxiliaries.console_log(res_data)
             res_data_length = len(res_data)
 
             response_to_send = "200 {} {}".format(res_data_length, res_data)
-            print(response_to_send)
+            Auxiliaries.console_log(response_to_send)
             return self.reply(response_to_send)
 
         except Exception as e:
-            print("Exception Occurred", e)
+            Auxiliaries.console_log("Exception Occurred", e)
             response_to_send = "500"
             return self.reply(response_to_send)
 
@@ -183,25 +184,25 @@ class InPeer:
             try:
                 book_id = int(args[1])
             except Exception as ex:
-                print("Exception Occurred", ex)
+                Auxiliaries.console_log("Exception Occurred", ex)
                 response_to_send = "402"
                 return self.reply(response_to_send)
 
             if book_id >= stuff.total_no_books:
-                print("Out of list index", book_id)
+                Auxiliaries.console_log("Out of list index", book_id)
                 response_to_send = "402"
                 return self.reply(response_to_send)
-            print(stuff.fetchBook(book_id).book_bytes)
+            Auxiliaries.console_log(stuff.fetchBook(book_id).book_bytes)
             res_data = base64.b64encode(stuff.fetchBook(book_id).book_bytes)
 
             res_data_length = len(res_data)
 
             response_to_send = "200 {} {}".format( res_data_length, res_data)
-            print(response_to_send)
+            Auxiliaries.console_log(response_to_send)
             return self.reply(response_to_send)
 
         except Exception as e:
-            print("Exception Occurred", e)
+            Auxiliaries.console_log("Exception Occurred", e)
             response_to_send = "500"
             return self.reply(response_to_send)
 

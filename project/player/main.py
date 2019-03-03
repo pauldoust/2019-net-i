@@ -14,21 +14,45 @@
 # @ DEPENDENCIES
 ##################
 # Loading Settings params ...
+import json
+
 from app.services.distributor import Distributor
 from app.services.requestor import Requestor
+from app.settings.config import Config
+from app.ui.console import Console
+#from app.ui.gui import Gui
 import time
 
 ########################################################################################################################
 #                                          MAIN   MODULE
 ########################################################################################################################
 
-# Starting Distributor Service
-Distributor.start_service(5002)
+# Loading console app in case setup is to be done ...
+cli = Console()
+cli.setup()
 
-time.sleep(5)
-# Starting Requestor Service
+# Loading System Settings ...
+Config.load_setting()
+
+
+# Starting Distributor Service ...
+Distributor.start_service(Config.DISTRIBUTOR_PORT)
+
+# Delaying before proceeding ...
+time.sleep(1)
+
+# Starting Requestor Service ...
 Requestor.start_service()
+
+# Launching Console Application to monitor and manage activities ...
+cli.launch()
+
 
 ########################################################################################################################
 #                                         END MAIN   MODULE
 ########################################################################################################################
+
+# Review Logging system
+# Requestor request book
+# Priority Queue
+# Remote lib  repo

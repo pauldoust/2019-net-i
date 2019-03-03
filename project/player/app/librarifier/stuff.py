@@ -1,7 +1,14 @@
+from collections import Counter
+from itertools import chain
+from queue import PriorityQueue
+
 from  app.librarifier.book import Book
 from app.settings.config import  Config
 import pickle
 import os
+
+from app.utilites.auxiliaries import Auxiliaries
+
 
 class Stuff:
 
@@ -10,7 +17,7 @@ class Stuff:
         Default chunk size: 1k."""
         while True:
             data = file_object.read(chunk_size)
-            # print(type(bytearray(data)))
+            # Auxiliaries.console_log(type(bytearray(data)))
             if not data:
                 break
             yield data
@@ -30,7 +37,7 @@ class Stuff:
                         book_id += 1
                     book = Book()
                     book.book_bytes = bytearray(piece)
-                    # print(book.getSize())
+                    # Auxiliaries.console_log(book.getSize())
                     self.books.append(book)
                     # self.books = [Book(piece) for i in range(books_num)]
 
@@ -52,20 +59,33 @@ class Stuff:
     def flushToFile(self, filePath):
         data = bytearray()
         for book in self.books:
-            # print(type(book.book_bytes))
+            # Auxiliaries.console_log(type(book.book_bytes))
             data  = data + book.book_bytes
-        print("final: ", len(data))
+        Auxiliaries.console_log("final: ", len(data))
         self.create_file(filePath, data)
 
     def create_file(self, filePath, data):
-        print("Writing to file")
+        Auxiliaries.console_log("Writing to file")
         with open(filePath, 'wb') as file:
             file.write(data)
         return True
 
+    def getPriorityBooks(self, availableBooks):
+        q = PriorityQueue()
+        data = list(chain.from_iterable(availableBooks))
+        dictPriorityBooks = dict(Counter(data))
+        print("counts", dictPriorityBooks)
+        for key, value in dictPriorityBooks.items():
+            q.put((value, key))
+
+        while not q.empty():
+            next_item = q.get()
+            print(next_item)
+        return q
+
 
     def is_download_complete(self):
-        print("number_of_books_received", str(len(self.list_book_received)) )
+        Auxiliaries.console_log("number_of_books_received", str(len(self.list_book_received)) )
         if len(self.list_book_received) == self.total_no_books:
             return True
         return  False
@@ -89,18 +109,26 @@ class Stuff:
 
 
 if __name__ == "__main__":
+    """
     read_file_path = Config.MYDB_DIR +os.sep+ "images.jpeg"
     write_stuff_file_path = Config.STUFFS_DIR +os.sep+"data.pkl"
     write_full_file_path = Config.DOWNLOAD_DIR +os.sep+ "images_downloaded.jpg"
 
     #persist
     s = Stuff(read_file_path, 1024)
-    print(s.total_no_books)
+    Auxiliaries.console_log(s.total_no_books)
     s.persist(write_stuff_file_path)
 
 
     #load
     s = Stuff.load(write_stuff_file_path)
-    print(s.total_no_books)
+    Auxiliaries.console_log(s.total_no_books)
     s.flushToFile(write_full_file_path)
     # Flashing  should be progressive
+    """
+
+    # test Priority Queue
+    my_list = [[1, 2, 3], [4, 3, 2, 1, 5, 6], [1, 2, 3, 7, 8, 9, 10], [11, 12, 1, 14, 3, 1, 5, 6], [1], [3]]
+    # persist
+    s = Stuff("/media/betek/LENOVO/solve_ai.mp3", 1024)
+    print(s.getPriorityBooks(my_list))

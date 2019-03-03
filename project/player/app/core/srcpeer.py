@@ -20,6 +20,7 @@ from threading import Thread
 import  time
 
 from app.librarifier.book import Book
+from app.utilites.auxiliaries import Auxiliaries
 from app.utilites.netutils import Netutils
 
 
@@ -53,14 +54,14 @@ class SrcPeer:
         *****************************************
         """
         command = "PING"
-        print("writing to socket ...")
+        Auxiliaries.console_log("writing to socket ...")
         # Sending <Ping> Request to Candidate Peer ...
         self.sock_write(command)
-        print("waiting for socket response ...")
+        Auxiliaries.console_log("waiting for socket response ...")
         # Reading Response from Candidate Peer ...
         response = self.sock_read()
 
-        print(response)
+        Auxiliaries.console_log(response)
         # Decoding response from Candidate Peer ...
         if response == "200":
             return True
@@ -121,11 +122,11 @@ class SrcPeer:
         """
         response = response.split("b\'")[1]
         response_parts = response.split(" ")
-        print(response_parts)
+        Auxiliaries.console_log(response_parts)
 
         res_code = response_parts[0]
 
-        print(res_code)
+        Auxiliaries.console_log(res_code)
         res_data = None
         res_data_length = 0
 
@@ -141,11 +142,12 @@ class SrcPeer:
         """
         response_parts = response.split(" ")
 
-        print(response_parts)
+        #Auxiliaries.console_log(response_parts)
+        Auxiliaries.console_log("book received")
 
         res_code = response_parts[0].replace("b\"","")
 
-        print(res_code)
+        Auxiliaries.console_log(res_code)
         res_data = None
         res_data_length = 0
 
@@ -154,7 +156,7 @@ class SrcPeer:
             res_data= str.join("",response_parts[2:]).replace("\\r\\n", "")
             res_data= res_data.replace("b\'","").replace("\"","")
             res_data = base64.b64decode(res_data)
-            #print(repr(res_data) )
+            #Auxiliaries.console_log(repr(res_data) )
 
         return res_code, res_data_length, res_data
 
@@ -167,6 +169,7 @@ class SrcPeer:
         *****************************************
         """
         try:
+            #print(self.get_peer_ip())
             self.peer_socket = socket.create_connection((self.get_peer_ip(), self.get_peer_port()))
             return True
         except Exception:
@@ -274,7 +277,7 @@ class SrcPeer:
         """
 
         def handle(_self, library_id, collected_books, stuff_obj, library_obj):
-            print("starting  srcpeer download_job ... ")
+            Auxiliaries.console_log("starting  srcpeer download_job ... ")
             try:
                 # Connect to peer ...
                 if _self.connect() is False:
@@ -293,28 +296,28 @@ class SrcPeer:
 
                     if res_code == "200":
                         available_books = json.loads(res_data)
-                        #print("available_books", available_books)
+                        #Auxiliaries.console_log("available_books", available_books)
                     else:
                         _self.set_activity_status(False)
                         break
 
                     # Checking missing books per what is already available in stuff ...
-                    missing_book = Netutils.diff_list( stuff_obj.get_list_book_received(), available_books)
-                    print("list book already received", stuff_obj.get_list_book_received())
-                    print("missing book", missing_book)
+                    missing_book = Auxiliaries.diff_list( stuff_obj.get_list_book_received(), available_books)
+                    Auxiliaries.console_log("list book already received", stuff_obj.get_list_book_received())
+                    Auxiliaries.console_log("missing book", missing_book)
                     if len(missing_book) == 0:
-                        print("No interresting available book(s) from you, I am not interested. bye")
+                        Auxiliaries.console_log("No interresting available book(s) from you, I am not interested. bye")
                         _self.set_activity_status(False)
                         break
 
                     # Requesting for all the missing books till none are left ...
                     for book_id in missing_book:
-                        print("requesting book id ...", book_id)
+                        Auxiliaries.console_log("requesting book id ...", book_id)
                         res_code, res_data_length, res_data = _self.request_book(library_id, book_id)
 
                         if res_code == "200":
                             book = res_data
-                            print("received book :", book)
+                            Auxiliaries.console_log("received book :", book)
                             collected_books.append([book_id,book])
 
 
@@ -324,9 +327,9 @@ class SrcPeer:
                     time.sleep(14)
 
                 _self.set_activity_status(False)
-                print("exiting  srcpeer  download_job... ", _self.get_peer_id())
+                Auxiliaries.console_log("exiting  srcpeer  download_job... ", _self.get_peer_id())
             except Exception as e:
-                print("Exception ", e)
+                Auxiliaries.console_log("Exception ", e)
                 _self.set_activity_status(False)
                 pass
 

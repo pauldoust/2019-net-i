@@ -33,14 +33,14 @@ def handle_acceptall():
         # accept new clients connections,
         # and start a handle_client thread every time
         server_socket.bind(("127.0.0.1", 5001))
-        print("Starting Dummy Server ...")
+        Auxiliaries.console_log("Starting Dummy Server ...")
         server_socket.listen()
-        print("Dummy Server Started")
+        Auxiliaries.console_log("Dummy Server Started")
         while True:
 
             client_con, client_address = server_socket.accept()
-            print("Client connected ...")
-            print("Incoming peer length", InPeer.incoming_peer_length)
+            Auxiliaries.console_log("Client connected ...")
+            Auxiliaries.console_log("Incoming peer length", InPeer.incoming_peer_length)
             incoming_peer = InPeer(client_con, client_address)
             #incoming_peer.handle_request().start()
             handle_client(client_con).start()
@@ -56,9 +56,9 @@ def handle_client(socket):
         while True:
             try:
                 line = Netutils.read_line(socket)
-                print("\nCommand IN: {} ".format(line))
+                Auxiliaries.console_log("\nCommand IN: {} ".format(line))
                 if line is None:
-                    print("Client disconnecting ...")
+                    Auxiliaries.console_log("Client disconnecting ...")
                     break
 
                 # Handling command
@@ -69,29 +69,29 @@ def handle_client(socket):
                 if command == "PING":
                     response_to_send = "200"
                     socket.sendall(str.encode("{}\r\n".format(response_to_send)))
-                    print("\nCommand OUT: {} ".format(response_to_send))
+                    Auxiliaries.console_log("\nCommand OUT: {} ".format(response_to_send))
 
                 # GET AVAILABLE BOOK
                 elif command == "GET_AVAILABLE_BOOKS":
                     response_to_send = "200 []"
                     socket.sendall(str.encode("{}\r\n".format(response_to_send)))
-                    print("\nCommand OUT: {} ".format(response_to_send))
+                    Auxiliaries.console_log("\nCommand OUT: {} ".format(response_to_send))
 
                 # REQUEST BOOK
                 elif command == "REQUEST_BOOK":
                     response_to_send = "200 []"
                     socket.sendall(str.encode("{}\r\n".format(response_to_send)))
-                    print("\nCommand OUT: {} ".format(response_to_send))
+                    Auxiliaries.console_log("\nCommand OUT: {} ".format(response_to_send))
 
                 else:
                     response_to_send = "500"
                     socket.sendall(str.encode("{}\r\n".format(response_to_send)))
-                    print("\nCommand OUT: {} ".format(response_to_send))
+                    Auxiliaries.console_log("\nCommand OUT: {} ".format(response_to_send))
             except:
                 response_to_send = "500"
                 socket.sendall(str.encode("{}\r\n".format(response_to_send)))
-                print("\nCommand OUT: {} ".format(response_to_send))
-                print("Exception occured.  disconnecting ...")
+                Auxiliaries.console_log("\nCommand OUT: {} ".format(response_to_send))
+                Auxiliaries.console_log("Exception occured.  disconnecting ...")
                 break
 
     t = Thread(target=handle)

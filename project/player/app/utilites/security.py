@@ -4,7 +4,7 @@
 # @ Author : EMMA (Group I)
 # @ Course : Computer Network
 # @ Since  : January 2019
-# @ Desc   : This Module  implements all  security (standard | custom) algo
+# @ Desc   : This Module  implements all  security (standard | custom) helper functions
 # @ Ref    : UJM | Computer Network Lab
 #
 #

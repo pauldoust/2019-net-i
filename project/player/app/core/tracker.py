@@ -15,6 +15,8 @@
 ##################
 import socket
 import json
+
+from app.utilites.auxiliaries import Auxiliaries
 from app.utilites.netutils import Netutils
 
 
@@ -45,15 +47,16 @@ class Tracker:
         *****************************************
         """
         command = "LIST_PEERS {}".format(library_id)
-        print("writing to socket ...", command)
+        Auxiliaries.console_log("writing to socket ...", command)
         # Sending <Ping> Request to Candidate Peer ...
         self.connect()
         self.sock_write(command)
-        print("waiting for socket response ...")
+        Auxiliaries.console_log("waiting for socket response ...")
         # Reading Response from Candidate Peer ...
         response_str = self.sock_read()
+        #print(response_str)
         self.disconnect()
-        print("reading response from socket ...", response_str)
+        Auxiliaries.console_log("reading response from socket ...", response_str)
 
         try:
             # Response format : 200 {length_resp} {resp}
@@ -66,10 +69,20 @@ class Tracker:
             res_code = response_parts[0]
             if res_code == "200":
                 res_data_length = int(response_parts[1])
-                res_data = str(response_parts[2:][0])
+                # Adapting to new protocol
+
+                res_data = str.join("", response_parts[2:])
+
+                res_data = json.loads(str(res_data) )
+                #print("json_load", res_data)
+                ip_port_lists = list()
+                for objs in res_data :
+                    ip_port_lists.append( str( objs['peer_ip'])+":"+ str(objs['peer_port']))
+
+                res_data = json.dumps(ip_port_lists)
 
         except Exception as e:
-            print("Error occurred while decoding response. Details: "+str(e))
+            Auxiliaries.console_log("Error occurred while decoding response. Details: "+str(e))
             res_code = 500
 
         return res_code, res_data_length, res_data
@@ -86,21 +99,82 @@ class Tracker:
         *****************************************
         """
         command = "REGISTER_PEER {} {} {}".format(library_id, ip, port)
-        print("writing to socket ...", command)
+        Auxiliaries.console_log("writing to socket ...", command)
         # Sending <Register peer> Request to Candidate Peer ...
         self.connect()
         self.sock_write(command)
-        print("waiting for socket response ...")
+        Auxiliaries.console_log("waiting for socket response ...")
         # Reading Response from Candidate Peer ...
         response = self.sock_read()
         self.disconnect()
-        print("reading response from socket ...", response)
-        print(response)
+        Auxiliaries.console_log("reading response from socket ...", response)
+        Auxiliaries.console_log(response)
         # Decoding response from Candidate Peer ...
         if response == "200":
             return True
         else:
             return False
+
+
+    def register_peer(self, library_id, ip, port):
+        """
+        *****************************************
+        Method used to register a peer to the tracker
+
+        :param library_id:
+        :param ip:
+        :param port:
+        :return:
+        *****************************************
+        """
+        command = "REGISTER_PEER {} {} {}".format(library_id, ip, port)
+        Auxiliaries.console_log("writing to socket ...", command)
+        # Sending <Register peer> Request to Candidate Peer ...
+        self.connect()
+        self.sock_write(command)
+        Auxiliaries.console_log("waiting for socket response ...")
+        # Reading Response from Candidate Peer ...
+        response = self.sock_read()
+        self.disconnect()
+        Auxiliaries.console_log("reading response from socket ...", response)
+        Auxiliaries.console_log(response)
+        # Decoding response from Candidate Peer ...
+        if response == "200":
+            return True
+        else:
+            return False
+
+
+
+    def delete_all_peer(self):
+        """
+        *****************************************
+        Method used to register a peer to the tracker
+
+        :param library_id:
+        :param ip:
+        :param port:
+        :return:
+        *****************************************
+        """
+        command = "DELETE "#.format(library_id, ip, port)
+        Auxiliaries.console_log("writing to socket ...", command)
+        # Sending <Register peer> Request to Candidate Peer ...
+        self.connect()
+        self.sock_write(command)
+        Auxiliaries.console_log("waiting for socket response ...")
+        # Reading Response from Candidate Peer ...
+        response = self.sock_read()
+        self.disconnect()
+        Auxiliaries.console_log("reading response from socket ...", response)
+        Auxiliaries.console_log(response)
+        # Decoding response from Candidate Peer ...
+        if response == "200":
+            return True
+        else:
+            return False
+
+
 
     def connect(self):
         """
