@@ -19,8 +19,6 @@ from threading import Thread
 from app.core.inpeer import InPeer
 import socket
 import random
-import time
-
 from app.settings.config import Config
 from app.utilites.auxiliaries import Auxiliaries
 from app.utilites.netutils import Netutils
@@ -33,7 +31,8 @@ class Distributor:
 
     port = 0
     status = False
-    def __init__(self, ):
+
+    def __init__(self):
         """
         *****************************************
         Default Constructor
@@ -45,7 +44,7 @@ class Distributor:
     @staticmethod
     def start_service(distributor_port=None):
         if distributor_port is None:
-            distributor_port = random.randrange(1023, 65535)
+            distributor_port = Config.DISTRIBUTOR_PORT
         if str(distributor_port) == '0':
             distributor_port = random.randrange(1023, 65535)
 
@@ -81,8 +80,8 @@ class Distributor:
 
     @staticmethod
     def get_ip():
-        #return "127.0.0.1"
-        return  Netutils.get_my_remote_ip()
+        # return "127.0.0.1"
+        return Netutils.get_my_remote_ip()
 
     @staticmethod
     def get_port():

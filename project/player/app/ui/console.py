@@ -24,6 +24,7 @@ from app.services.distributor import Distributor
 from app.core.tracker import Tracker
 from app.librarifier.librarifier import Librarifier
 from app.librarifier.stuff import Stuff
+from app.services.maestro import Maestro
 from app.services.requestor import Requestor
 from app.settings.config import Config
 from app.utilites.auxiliaries import Auxiliaries
@@ -62,9 +63,11 @@ class Console:
         # Creating data dir and related sub dirs if not yet done ...
         Console.app_title()
         print("\n\n")
+
         Console.start_loading("Loading modules ")
         try:
             Config.data_repo_inspection()
+            Auxiliaries.empty_file(Config.LOG_DIR+os.sep+"debug.txt")
 
             # Is setup process already done ?
             if Config.is_setup() is True:
@@ -227,8 +230,9 @@ class Console:
 
         try:
             # print("(1/3) Creating Lib File ....")
+            chunkSize = 4096 # 4k
             Console.start_loading("(1/3) Creating Lib File ")
-            status, library_id, output_file_path = Librarifier.librarify(input_file_path, hub_address, 1024, output_folder_path)
+            status, library_id, output_file_path = Librarifier.librarify(input_file_path, hub_address, chunkSize, output_folder_path)
             time.sleep(3)
             if status is True :
                 Console.stop_loading()
@@ -238,7 +242,7 @@ class Console:
                 Console.start_loading("(2/3) Creating Stuff File ")
 
                 # Build stuff for that library...
-                stuff  = Stuff(input_file_path)
+                stuff  = Stuff(input_file_path, chunk_size = chunkSize)
                 stuff_file_path = Config.STUFFS_DIR + os.sep + library_id + ".pkl"
                 stuff.persist(stuff_file_path)
                 time.sleep(3)
@@ -333,10 +337,7 @@ class Console:
 
             # Load All the Stuff Being download
             list_of_downloads = Config.LIST_IN_PROGRESS_LIB + Config.LIST_PENDING_LIB
-
-
             # Get Informations about their library if not exist
-
 
             combined = "\nPENDING DOWNLOAD\n--> {}\n\nDOWNLOAD IN PROGRESS\n--> {}\n\nDOWNLOADED\n--> {} \n\n\n\n".format(str(Config.LIST_PENDING_LIB), str(Config.LIST_IN_PROGRESS_LIB), str(Config.LIST_DOWNLOADED_LIB))
 
@@ -385,15 +386,19 @@ class Console:
         prev_combined = ""
 
         while True:
+            maestro_status = "OFF"
             distributor_status = "OFF"
             requestor_status = "OFF"
 
+            if Maestro.get_service_status() is True:
+                maestro_status = "RUNNING"
             if Distributor.get_service_status() is True:
                 distributor_status = "RUNNING"
             if Requestor.get_service_status() is True:
                 requestor_status = "RUNNING"
 
-            combined = "Distributor service ( {} )\n\nRequestor Service ( {} ) \n\n\n".format(distributor_status,requestor_status)
+            maestro_last_message = Maestro.get_last_message()
+            combined = "--> Maestro Service ({}) - {}\n\t|\t\n\t|--> Distributor service ( {} )\n\t|\n\t|--> Requestor Service ( {} ) \n\n\n".format(maestro_status, maestro_last_message, distributor_status,requestor_status)
 
             if prev_combined != combined:
                 Console.app_title()
@@ -486,6 +491,7 @@ class Console:
             if answer.upper() == "Y":
                 Console.start_loading("Exiting")
                 Config.persist_setting()
+                Auxiliaries.flush_to_log()
                 time.sleep(2)
                 Console.stop_loading()
                 Console.clear_screen()
@@ -640,10 +646,11 @@ class Console:
     ####################################################################################################################
 
 if __name__ == "__main__":
-    cli = Console()
-    cli.start_loading("Loading")
-    time.sleep(10)
-    cli.stop_loading()
+    #cli = Console()
+    #cli.start_loading("Loading")
+    #time.sleep(10)
+    #cli.stop_loading()
     #time.sleep(2)
-    print("done sleeping")
-    time.sleep(5)
+    #print("done sleeping")
+    #time.sleep(5)
+    Console.show_multiple_progressbar([ ["lib1", 40, 100],["lib2", 70, 100],["lib2", 50, 100] ], size=60)

@@ -15,7 +15,6 @@
 ##################
 import socket
 import json
-
 from app.utilites.auxiliaries import Auxiliaries
 from app.utilites.netutils import Netutils
 
@@ -144,8 +143,6 @@ class Tracker:
         else:
             return False
 
-
-
     def delete_all_peer(self):
         """
         *****************************************
@@ -157,7 +154,7 @@ class Tracker:
         :return:
         *****************************************
         """
-        command = "DELETE "#.format(library_id, ip, port)
+        command = "DELETE "
         Auxiliaries.console_log("writing to socket ...", command)
         # Sending <Register peer> Request to Candidate Peer ...
         self.connect()
@@ -173,8 +170,6 @@ class Tracker:
             return True
         else:
             return False
-
-
 
     def connect(self):
         """
@@ -232,7 +227,7 @@ class Tracker:
         *****************************************
         """
 
-        self.tracker_socket.sendall(str.encode("{}\r\n".format(str_to_send)))
+        self.tracker_socket.sendall(str.encode("{}\r\n".format(str_to_send),"utf-8"))
         return True
 
     def sock_read(self, timeout=None):

@@ -28,7 +28,8 @@ class Config:
     #                                               CONFIG MODULE
     ####################################################################################################################
 
-    LIST_PENDING_LIB = ["lib_1551448247"]
+    # Default Configurations
+    LIST_PENDING_LIB = list()
     LIST_IN_PROGRESS_LIB = list()
     LIST_DOWNLOADED_LIB = list()
     ROOT_DIR = dirname(dirname(dirname(__file__)))
@@ -37,10 +38,12 @@ class Config:
     STUFFS_DIR = DATA_DIR + os.sep + "temp"
     MYDB_DIR = DATA_DIR + os.sep + "mydb"
     DOWNLOAD_DIR = DATA_DIR + os.sep + "download"
+    LOG_DIR = DATA_DIR + os.sep + "logs"
     DISTRIBUTOR_PORT = 0
     HUB_IP = "198.58.103.254"
     #HUB_IP = "192.168.43.188"
     HUB_PORT = 7777
+    DEBUG_MODE = False
 
     @staticmethod
     def persist_setting():
@@ -70,6 +73,7 @@ class Config:
             Config.create_dir(Config.STUFFS_DIR)
             Config.create_dir(Config.MYDB_DIR)
             Config.create_dir(Config.DOWNLOAD_DIR)
+            Config.create_dir(Config.LOG_DIR)
             return True
 
         except Exception as e:

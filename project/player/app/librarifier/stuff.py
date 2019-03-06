@@ -1,14 +1,11 @@
-from collections import Counter
+import pickle
+import traceback
 from itertools import chain
 from queue import PriorityQueue
-
-from  app.librarifier.book import Book
-from app.settings.config import  Config
-import pickle
-import os
-
+from collections import Counter
+from app.librarifier.book import Book
 from app.utilites.auxiliaries import Auxiliaries
-
+from random import randrange
 
 class Stuff:
 
@@ -17,49 +14,81 @@ class Stuff:
         Default chunk size: 1k."""
         while True:
             data = file_object.read(chunk_size)
-            # Auxiliaries.console_log(type(bytearray(data)))
             if not data:
                 break
             yield data
 
-    def __init__(self, file_path = None, chunk_size =1024 , total_no_books = 0):
-        self.books = []
+
+    def getProgress(self):
+        Auxiliaries.console_log ("received so far:  ", len(self.list_book_received), " / ", self.total_no_books)
+        # print ("received so far:  ", len(self.list_book_received), " / ", self.total_no_books)
+
+        return len(self.list_book_received ) / self.total_no_books
+
+
+
+    def __init__(self, file_path = None, chunk_size = 1024,  total_no_books = 0):
+        self.availableBooks = dict()
+        # self.lock = threading.Lock()
+        self.books = {}
         self.total_no_books = total_no_books
         self.list_book_received = set()
 
-        if file_path is not None:
-            with open(file_path, 'rb') as file:
-                book_id= 0
-                for piece in self.read_in_chunks(file, chunk_size):
-                    self.total_no_books += 1
-                    if book_id not in self.list_book_received:
-                        self.list_book_received.add(book_id)
-                        book_id += 1
-                    book = Book()
-                    book.book_bytes = bytearray(piece)
-                    # Auxiliaries.console_log(book.getSize())
-                    self.books.append(book)
-                    # self.books = [Book(piece) for i in range(books_num)]
+        if file_path is None:
+            return
 
-
-    def createSeedBooks(self, no_books ):
-        self.total_no_books = no_books
-        for i in range(0, no_books):
-            self.books.append(Book())
-
+        bookIndex = 0
+        with open(file_path, 'rb') as file:
+            for piece in self.read_in_chunks(file, chunk_size):
+                book = Book()
+                book.book_bytes = bytearray(piece)
+                self.storeBook(book, bookIndex)
+                bookIndex = bookIndex +1
+            if self.total_no_books == 0:
+                self.total_no_books = bookIndex
 
     def storeBook(self, book, book_id ):
-        self.books[book_id].book_bytes = book
-        if book_id not in  self.list_book_received:
+        self.books[book_id] = book
+        # print(type(self.books))
+        # print(type(book_id))
+        if book_id not in  self.get_list_book_received():
             self.list_book_received.add(book_id)
 
+    def constructBook(self, b_bytes, book_id ):
+        try:
+            # print("type: ", type(book))
+            book = Book()
+            book.book_bytes = bytearray(b_bytes)
+            self.storeBook(book, book_id)
+        except Exception as e :
+            Auxiliaries.console_log("Exception", e)
+            traceback.printnt_exc()
+            # sys.exit(1)
+    
     def fetchBook(self, book_id):
         return self.books[book_id]
 
+    def getNeededBooks(self):
+        return len(self.books)
+
+    def getPriorityBooks(self, availableBooks):
+        q = PriorityQueue()
+        data = list(chain.from_iterable(availableBooks))
+        dictPriorityBooks = dict(Counter(data))
+        # print("counts" , dictPriorityBooks)
+        for key, value in dictPriorityBooks.items():
+            q.put((-value, key))
+        return q
+
     def flushToFile(self, filePath):
         data = bytearray()
-        for book in self.books:
-            # Auxiliaries.console_log(type(book.book_bytes))
+        # print(type(self.books))
+        index = 0
+        for bookIndex in self.books:
+            book = self.books[index]
+            index = index + 1
+            # print(bookIndex)
+            # print(type(book))
             data  = data + book.book_bytes
         Auxiliaries.console_log("final: ", len(data))
         self.create_file(filePath, data)
@@ -70,22 +99,7 @@ class Stuff:
             file.write(data)
         return True
 
-    def getPriorityBooks(self, availableBooks):
-        q = PriorityQueue()
-        data = list(chain.from_iterable(availableBooks))
-        dictPriorityBooks = dict(Counter(data))
-        print("counts", dictPriorityBooks)
-        for key, value in dictPriorityBooks.items():
-            q.put((value, key))
-
-        while not q.empty():
-            next_item = q.get()
-            print(next_item)
-        return q
-
-
     def is_download_complete(self):
-        Auxiliaries.console_log("number_of_books_received", str(len(self.list_book_received)) )
         if len(self.list_book_received) == self.total_no_books:
             return True
         return  False
@@ -95,6 +109,72 @@ class Stuff:
         pickle.dump(self, output)
         output.close()
 
+    def get_list_book_received(self):
+        return self.list_book_received
+
+    def getPriorityBooks(self, availableBooks):
+        # print(availableBooks)
+        q = PriorityQueue()
+        data = list(chain.from_iterable(availableBooks))
+        dictPriorityBooks = dict(Counter(data))
+        # print("counts" , dictPriorityBooks)
+        for key,value in dictPriorityBooks.items():
+            ourKey =   str(randrange(1,1000)) + ":" + str(key) 
+            q.put((value,ourKey))
+        # while not q.empty():
+        #  next_item = q.get()
+        #  print(next_item[0], next_item[1])
+        return q
+
+    def storeAvailableBooks(self, peerId, availableBooks ):
+        # self.lock.acquire()
+        try: 
+            # print("storeBook: ", peerId , " - ", availableBooks )
+            self.availableBooks[peerId] = availableBooks
+
+        except Exception as e:
+            Auxiliaries.console_log("Exception in storeAvailableBooks: {} ".format(e))
+        # finally:  
+            # self.lock.release()
+
+    def getNextBook(self, peerId, collected_books):
+        # self.lock.acquire()
+        try: 
+            # print("started")
+            collected = [ x[0] for x in collected_books]
+            allBooksList = []
+            for key, value in self.availableBooks.items():
+                allBooksList.append(value)
+            # print("all Books: ", allBooksList)
+
+            pq = self.getPriorityBooks(allBooksList)
+            # print('queue: ', pq.queue)
+            # while not pq.empty():
+            #     next_item = pq.get()
+            #     freq = next_item [0]
+            #     element = next_item[1]
+            #     element = element.split(":") [1]
+            #     print(freq, element)
+
+            # return
+            while not pq.empty():
+                 next_item = pq.get()[1]
+                 next_item = next_item.split(":")[1]
+                 next_item = int(next_item)
+                 # print('next_item: ', next_item)
+                 if next_item in self.availableBooks[peerId]:
+                    # print("in", self.get_list_book_received())
+                    if next_item not in  self.get_list_book_received() and next_item not in collected:
+                        # print("returning: ", next_item)
+                        return next_item
+
+            # print("end")
+            return None
+        except Exception as e:
+            Auxiliaries.console_log("Exception in getNextBook: {} ".format(e))
+        # finally:
+            # self.lock.release()
+
     @staticmethod
     def load(pkl_path):
         pkl_file = open(pkl_path, 'rb')
@@ -102,33 +182,3 @@ class Stuff:
         pkl_file.close()
         return obj
 
-    def get_list_book_received(self):
-        return self.list_book_received
-
-
-
-
-if __name__ == "__main__":
-    """
-    read_file_path = Config.MYDB_DIR +os.sep+ "images.jpeg"
-    write_stuff_file_path = Config.STUFFS_DIR +os.sep+"data.pkl"
-    write_full_file_path = Config.DOWNLOAD_DIR +os.sep+ "images_downloaded.jpg"
-
-    #persist
-    s = Stuff(read_file_path, 1024)
-    Auxiliaries.console_log(s.total_no_books)
-    s.persist(write_stuff_file_path)
-
-
-    #load
-    s = Stuff.load(write_stuff_file_path)
-    Auxiliaries.console_log(s.total_no_books)
-    s.flushToFile(write_full_file_path)
-    # Flashing  should be progressive
-    """
-
-    # test Priority Queue
-    my_list = [[1, 2, 3], [4, 3, 2, 1, 5, 6], [1, 2, 3, 7, 8, 9, 10], [11, 12, 1, 14, 3, 1, 5, 6], [1], [3]]
-    # persist
-    s = Stuff("/media/betek/LENOVO/solve_ai.mp3", 1024)
-    print(s.getPriorityBooks(my_list))

@@ -61,7 +61,7 @@ class UnitTest:
     def test_peer_request_books():
         peer = SrcPeer(CANDIDATE_PEER_IP, CANDIDATE_PEER_PORT)
         peer.connect()
-        print(peer.request_book("lib_1550916735", "6"))
+        print(peer.request_book("lib_1550883701", "6"))
         peer.disconnect()
         time.sleep(5)
 
@@ -87,16 +87,6 @@ class UnitTest:
 
         tracker.disconnect()
 
-    @staticmethod
-    def test_delete_peer(port_end):
-        tracker = Tracker(Config.HUB_IP, Config.HUB_PORT)
-        print("connecting ...")
-        #print(tracker.register_peer("lib-001","127.0.0.1", "5002"))
-        print(tracker.delete_all_peer("lib_1550883701", "127.0.0.1", "5001"))
-        print(tracker.register_peer("lib_1550883701", "127.0.0.1", "5002"))
-        print(tracker.register_peer("lib_1550883701", "127.0.0.1", "5003"))
-        #print(tracker.register_peer("lib_1550883701", "127.0.0.1", "5004"))
-        #print(tracker.register_peer("lib_1550883701", "127.0.0.1", "5002"))
 
 
     ####################################################################################################################
@@ -110,8 +100,9 @@ if __name__ == "__main__":
         #UnitTest.test_peer_request_books()
         #UnitTest.test_register_peer("22")
         #UnitTest.test_list_peers()
+        #UnitTest.test_bytes()
 
-        print([2,3,4,4]+[11,23,45])
+        #print([2,3,4,4]+[11,23,45])
 
        # t = Thread()
        # for i in range(1,1000):
@@ -126,3 +117,13 @@ if __name__ == "__main__":
         # queue
         #print(repr(bytearray(list(b"www"))))
         #print( Auxiliaries.diff_list(list(range(0,5)), list(range(0,10))))
+
+        """
+        from ast import literal_eval
+
+        with open(file_path2, 'r', encoding='utf-8') as f_open:
+            source = f_open.read()
+            string = literal_eval("b'{}'".format(source))
+            print("my bytes:", string)  
+        """
+        print(type(eval("[2,34,5]")))

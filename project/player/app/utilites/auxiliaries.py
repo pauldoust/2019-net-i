@@ -21,8 +21,7 @@ import sys
 import platform
 import sys
 import time
-
-
+from pathlib import Path
 
 
 
@@ -32,6 +31,7 @@ class Auxiliaries:
     ####################################################################################################################
 
     LOG_BUFFER =[]
+    DEBUG_BUFFER = []
 
     @staticmethod
     def diff_list(list_a, list_b):
@@ -91,14 +91,22 @@ class Auxiliaries:
         *****************************************
         """
         buffer_limit = 100
-        # print(message)
-        #print(message)
 
-        #combined =  [list(row) for row in message]
+
         if len( Auxiliaries.LOG_BUFFER) > buffer_limit :
             Auxiliaries.LOG_BUFFER.pop(0)
 
         Auxiliaries.LOG_BUFFER.append(message)
+        pass
+
+    @staticmethod
+    def flush_to_log():
+        from app.settings.config import Config
+        if Config.DEBUG_MODE is True:
+            log_file_name = Config.LOG_DIR + os.sep+ "debug.txt"
+            Auxiliaries.write_to_file(log_file_name, str.join("\n", Auxiliaries.DEBUG_BUFFER))
+
+        Auxiliaries.DEBUG_BUFFER = []
 
 
     @staticmethod
@@ -202,6 +210,33 @@ class Auxiliaries:
         except ValueError:
             return False
 
+    @staticmethod
+    def write_to_file(myfilename, body):
+        """
+        *****************************************
+        Method used append a message in a file
+        to int
+
+        :param myfilename: String
+        :param body: String
+        :return: String
+        *****************************************
+        """
+        with open(myfilename, 'a') as the_file:
+            the_file.write("{}\n".format(body))
+
+    @staticmethod
+    def empty_file(myfilename):
+        """
+
+        :param myfilename:
+        :return:
+        """
+        if Path(myfilename).exists() is False :
+            return  False
+        with open(myfilename, 'w') as the_file:
+            the_file.write('')
+
     ####################################################################################################################
     #                                          END AUXILIARIES MODULE
     ####################################################################################################################
@@ -210,4 +245,7 @@ if __name__ == "__main__":
     #Auxiliaries.console_log("This is what I meant {} ".format("by"), 22)
     #from app.settings.config import Config
     #print(Auxiliaries.scan_dir( Config.LIBS_DIR ))
-    print(Auxiliaries.get_os_name())
+    #print(Auxiliaries.get_os_name())
+    #Auxiliaries.write_to_file("/media/betek/LENOVO/test.txt", "hi")
+    #Auxiliaries.empty_file("/media/betek/LENOVO/test.txt")
+    pass

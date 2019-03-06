@@ -13,46 +13,61 @@
 ##################
 # @ DEPENDENCIES
 ##################
-# Loading Settings params ...
-import json
-
-from app.services.distributor import Distributor
-from app.services.requestor import Requestor
+from app.services.maestro import Maestro
 from app.settings.config import Config
 from app.ui.console import Console
-#from app.ui.gui import Gui
-import time
+import traceback
+import os
+
 
 ########################################################################################################################
 #                                          MAIN   MODULE
 ########################################################################################################################
 
-# Loading console app in case setup is to be done ...
-cli = Console()
-cli.setup()
+class App:
 
-# Loading System Settings ...
-Config.load_setting()
+    @staticmethod
+    def start():
+        """
+        *****************************************
+        Method used to start the application
+            Ui and services of EMMA Torrents
 
+        :return: Void
+        *****************************************
+        """
+        try:
+            # Loading console app in case setup is to be done ...
+            cli = Console()
+            cli.setup()
 
-# Starting Distributor Service ...
-Distributor.start_service(Config.DISTRIBUTOR_PORT)
+            # Loading System Settings ...
+            Config.load_setting()
 
-# Delaying before proceeding ...
-time.sleep(1)
+            # Starting Master Service (Maestro)  ...
+            Maestro.start_service()
 
-# Starting Requestor Service ...
-Requestor.start_service()
+            # Launching Console Application to monitor and manage activities ...
+            cli.launch()
 
-# Launching Console Application to monitor and manage activities ...
-cli.launch()
+        # Handling all exceptions here ...
+        except Exception as e:
+            from app.utilites.auxiliaries import Auxiliaries
+            Auxiliaries.console_log("Exception raised in Main: {} ".format(e))
+            traceback.print_exc()
 
 
 ########################################################################################################################
 #                                         END MAIN   MODULE
 ########################################################################################################################
 
-# Review Logging system
-# Requestor request book
+
+if __name__ == "__main__":
+    App.start()
+
+# Review Logging system (done)
+# Requestor request book (done)
+# Work on Maestro
 # Priority Queue
 # Remote lib  repo
+# Too many IOs in collection reduce the cycle of collection while keeping cycle of blacklist same
