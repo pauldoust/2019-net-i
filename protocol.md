@@ -48,41 +48,8 @@
 This section  discusses all protocols  needed  by a player to communicate with the tracker. 
 
 In each protocol, we describe the **request** format/synopsis as sent by Player, all possible **responses** contents returned by  Tracker , the  **variables** ( enclosed into brackets )  in the request and/or response synopsis  as well as as well sample request(s) and response(s).
-<<<<<<< HEAD
 
 
-> **Note**: The set of characters used to mark the end of all request and response synopsis in the below protocols  will be  "**\r\n**"
-
-
-##### 1. LIST PEERS 
-
-**LIST PEERS** will be used by a player to request the list of registered players for a  given library.   
-  
-- **Request**
-   
-   `LIST_PEERS  [library_id]`
-   
-   * **library_id**  : *Alphanumeric String* used to uniquely identify a library on the Tracker. It is 14 characters long. 
-    
- 
-- **Response**: 
-=======
->>>>>>> 921896f352c3c2ab9a7728abe62a2f55a54c6b42
-
-	`200 [list_of_peers_length] [list_of_peers]`
-	
-	`300`
-		
-	`400` 
-	
-	`401` 
-	
-	`402` 
-	
-	`500` 
-
-<<<<<<< HEAD
-=======
 > **Note**: The set of characters used to mark the end of all request and response synopsis in the below protocols  will be  "**\r\n**"
 
 
@@ -111,7 +78,6 @@ In each protocol, we describe the **request** format/synopsis as sent by Player,
 	
 	`500` 
 
->>>>>>> 921896f352c3c2ab9a7728abe62a2f55a54c6b42
 	 * variables  description
 	   
 	   * **list_of_peers_length**: *Unsigned 16-bit Integer* that specifies the length/size of the list of peers/Players in bit. It ranges between 0 and 65 535 (Unsigned 16-bit integer). 
@@ -183,7 +149,6 @@ A typical scenario will be the first peer registering itself via this Protocol a
 	   * **401** : Invalid  Command Syntax
 	   * **402** : Invalid  Command argument(s)   
 	   * **500** : Tracker Sever Error 
-<<<<<<< HEAD
 
  - **Sample request(s) and response(s)** 
     
@@ -202,26 +167,6 @@ A typical scenario will be the first peer registering itself via this Protocol a
 
 
 
-=======
-
- - **Sample request(s) and response(s)** 
-    
-    
-    PeerA :> REGISTER_PEER lib00001 192.68.32.41 5001 \r\n
-    
-    
-    PeerB :> 200 \r\n
-    
-   ---
-    
-    PeerA :> REGISTER_PEER lib00001 192.68.32.45 8181 \r\n
-    
-    
-    PeerB :> 300 \r\n
-
-
-
->>>>>>> 921896f352c3c2ab9a7728abe62a2f55a54c6b42
 ## Communication between  Player A and Player B 
 
 
@@ -257,11 +202,6 @@ used just after socket connection between Player A and Player B  or whenever Pla
 	`402` 
 	
 	`500` 
-<<<<<<< HEAD
-	
-	
-=======
->>>>>>> 921896f352c3c2ab9a7728abe62a2f55a54c6b42
 	 
 	 * status codes description 
 	 
