@@ -1,20 +1,41 @@
-To bring hub on-line, just run this. To connect, peers must know your IP
-and PORT.
+# Hub 
 
-**DESCRIPTION**
+## Running the hub
 
-Hub module keeps track of available peers and handles their requests.
-The hub maintains a database to keep track of libraries and corresponding 
-lists of peers. On a boot up, hub tries to recover previously saved
-database; otherwise, it initializes empty one.
+Before running the hub, check out *config.py* file's **constants used** section to specify the parameters of the server.
+Make sure the PORT is unoccupied.
 
-While running, it accepts a connection and allocates a thread to deal with
-further communication. Once connection is accepted, hub tries to receive 
-a message from a client, decode it into a request and then execute 
-the request.
+After that, just execute the *hub.py* file to boot up a server.
 
-If the request is invalid (valid command, bad arguments, etc.), closes the 
-client socket connection, sends back error code and stops the allocated 
-thread.
+## Checking what's going on
 
-Once in a while the hub makes a backup of its current database.
+While running, the terminal will print some information to the standard output:
+
+* information about received connection
+* message received from client's socket
+* message when peer is added to the library
+* list of peers to send
+
+## Hub Architecture
+
+Hub module has two aims:
+
+* keeping track of available peers 
+* handling their requests
+
+It maintains **a database** in order to do so.
+On a boot up, hub tries to recover previously saved database; otherwise, initializes empty one.
+
+While running, it **listens** for a connection and allocates **a thread** to deal with further communication. 
+Once connection is accepted, the hub
+
+1. receives a message from a peer
+2. decodes it into a request
+3. based on request, executes correct operation
+4. closes the connection
+
+Once in a while **saves** current database in the same folder where it was run.
+
+## Note
+
+For list of supported requests refer to the **protocol.md** file.
