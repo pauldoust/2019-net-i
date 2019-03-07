@@ -42,9 +42,9 @@ We had testing and modifications in the last week also. Complete documentation a
 ## What works in Player
 
 - Multi-Threading
-	* The ability to handle (download) multiple libraries at the same time
-	* Downloading from different peers at the same time
-	* Uploading for different peers at the same time
+	* The ability to handle multiple libraries in parallel
+	* Downloading from different peers in parallel
+	* Uploading for different peers in parallel
 - Communicating with the hub
 	* Query the hub to find other players
 	* Register the peer for specific library
