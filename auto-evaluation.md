@@ -57,7 +57,7 @@ We had testing and modifications in the last week also. Complete documentation a
 - Provides available books information to other players
 - Integrity checking (book sha1 is checked before adding)
 - Players with errors or sending forged books are discarded automatically from list of peers of the player
-- Performance optimization, flushing to hard drive is controlled by a service that runs each interbal of time
+- Performance optimization, flushing to hard drive is controlled by a service that runs each interval of time
 - All major operations are logged for Troubleshooting
 
 
