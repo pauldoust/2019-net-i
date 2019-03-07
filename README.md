@@ -63,47 +63,45 @@ Note that you can change the settings provided during the setup process  by choo
 
 Let's describe every menu on the interface 
 
-Menu 1: Upload File 
- 
-	This Option allows a user to upload a file and thus generate a Library file that is sharable to every player. 
-	The Generated Player will be in  <PLAYER_FOLDER>/data/libs/lib_<library_id>.lib
-	Type "exit" to quit this section 
+### Menu 1: Upload File 
+This Option allows a user to upload a file and thus generate a Library file that is sharable to every player. 
+The Generated Player will be in  <PLAYER_FOLDER>/data/libs/lib_<library_id>.lib
+Type "exit" to quit this section 
 
 
-Menu 2: Download a File 
+### Menu 2: Download a File 
 
-	This Section allow a user to aquire a file assuming that the  adequated Library file has been manually placed in the 
-	library Folder   (<PLAYER_FOLDER>/data/libs)
-	Type "exit" to quit this section 
+This Section allow a user to aquire a file assuming that the  adequated Library file has been manually placed in the 
+library Folder   (<PLAYER_FOLDER>/data/libs)
+Type "exit" to quit this section 
 
 
-Menu 3: View Download 
+### Menu 3: View Download 
 
 	This Menu allow the user to track the Libraries pending download and downloaded so far 
 
 
-Menu 4: View Logs
+### Menu 4: View Logs
 	
-	This Option allows the user to view all the Events , Service and Debug and Error Logs of the system 
+This Option allows the user to view all the Events , Service and Debug and Error Logs of the system 
 
-Menu 5: View Services 
+### Menu 5: View Services 
 	
-	"View Services" provides the current states [ RUNNING, OFF ] of the Services of the <Emma Torrent> Player.
+"View Services" provides the current states [ RUNNING, OFF ] of the Services of the <Emma Torrent> Player.
 
 
-Menu 6: Settings 
+### Menu 6: Settings 
 	
-	This option allow a user to view and modify some setting  of the <EMMA Torrent> Player
+This option allow a user to view and modify some setting  of the <EMMA Torrent> Player
 
-
-
-Menu 7: About  
+### Menu 7: About  
 	
-	Display a message about <Emma Torrent> Player
+Display a message about <Emma Torrent> Player
 
 
-Menu 8: Exit  
-	To quit the Application 
+### Menu 8: Exit  
+To quit the Application 
+
 
 
 # Description of the architecture (what parts interacts how with what other parts)
@@ -123,8 +121,10 @@ The Player Module handles exchange of files beteen peers and provide a user inte
 
 The Emma services is essentially made up three main Services 
 
-	* **Maestro** : Master service that supervised subservices (Requestor, Distributed) states and can attempt to restart them  in case they unexpectely go offline 
-	* *Distributor* : Sub service that intializes a socket server and Manages all incoming peers request such as  GET_AVAILABLE_BOOKS, REQUEST BOOK  ... 
-	* **Requestor** : Sub service  that loads the library to be downloaded , interract with the hub and request books from candidate peers (peers that have a book of the desired libraries) according to a Priorty Queue Policy. 
+**Maestro** : Master service that supervised subservices (Requestor, Distributed) states and can attempt to restart them  in case they unexpectely go offline 
+
+**Distributor** : Sub service that intializes a socket server and Manages all incoming peers request such as  GET_AVAILABLE_BOOKS, REQUEST BOOK  ... 
+
+**Requestor** : Sub service  that loads the library to be downloaded , interract with the hub and request books from candidate peers (peers that have a book of the desired libraries) according to a Priorty Queue Policy. 
 
 
