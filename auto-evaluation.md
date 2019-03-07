@@ -38,6 +38,34 @@ We had testing and modifications in the last week also. Complete documentation a
 - No graceful exit if server crashes hard
 - Probably will fail under heavy loads (locks to blame)
 
+
+## What works in Player
+
+- Multi-Threading
+	* The ability to handle (download) multiple libraries at the same time
+	* Downloading from different peers at the same time
+	* Uploading for different peers at the same time
+- Communicating with the hub
+	* Query the hub to find other players
+	* Register the peer for specific library
+- Loading the library
+- Exchanging Books
+	* Download books from other players
+	* Provides books to other players
+- Persisting the current state every interval of time (to continue downloading after disconnecting)
+- Books are downloaded in specific order controlled by Priority Queue (which try to download the rarest book first)
+- Provides available books information to other players
+- Integrity checking (book sha1 is checked before adding)
+- Players with errors or sending forged books are discarded automatically from list of peers of the player
+- Performance optimization, flushing to hard drive is controlled by a service that runs each interbal of time
+- All major operations are logged for Troubleshooting
+
+
+## What does not work in Player
+- The player does not complain players with problems to the hub, instead, the player add them to a local black list
+
+
+
 ## Parts and time spent by each member
 
 Team leader: Etienne EKPO 
