@@ -4,6 +4,13 @@
 
 ## Running the hub
 
+There are no external libraries required to install "EMMA Torrent" Hub.  
+
+Recommended Python Version  3.5+ 
+
+Supported Operating Systems:  Linux, Windows 7+ 
+
+
 Before running the hub, check out *config.py* file's **constants used** section to specify the parameters of the server.
 Make sure the PORT is unoccupied.
 
@@ -14,9 +21,10 @@ After that, just execute the *hub.py* file to boot up a server.
 ## How to Install and  Run <Emma Torrent> Player   
 
 
-There are no external libraries required to install "EMMA Torrent" Player.  All libraries used are in-built assuming that in the Python versions described below  
+There are no external libraries required to install "EMMA Torrent" Player.  
 
 Recommended Python Version  3.5+ 
+
 Supported Operating Systems:  Linux, Windows 7+ 
 
 
@@ -36,6 +44,7 @@ The console interface of Player  will initilize the Setup procedure on the first
 
 
 Once the setup process completed, your configurations will be saved and the main menu of the console interface will be displayed as show below 
+
 
 ---
 
