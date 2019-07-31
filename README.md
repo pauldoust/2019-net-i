@@ -1,4 +1,4 @@
-# TODO
+# EMMA P2P File Sharing System
 
 # Instructions on how to build, run, and test your project
 
